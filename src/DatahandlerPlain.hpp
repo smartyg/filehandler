@@ -10,26 +10,20 @@
 #include "libgpsfile2/provider/provider.hpp"
 
 namespace libgpsfile2 {
-	class DatahandlerPlainReader : public BaseDatahandlerReaderPlugin {
+	class HandlerPlainReader : public HandlerReaderBase {
 	public:
-		DatahandlerPlainReader (std::shared_ptr<libgpsfile2::provider::ProviderReaderBase>, const std::string&);
-		~DatahandlerPlainReader (void);
+		HandlerPlainReader (std::unique_ptr<provider::ProviderReaderBase>, const std::string&);
+		~HandlerPlainReader (void);
 
 		bool read (std::ostream *, const std::size_t&) override;
-
-	private:
-		std::shared_ptr<libgpsfile2::provider::ProviderReaderBase> data_provider;
 	};
 
-	class DatahandlerPlainWriter : public BaseDatahandlerWriterPlugin {
+	class HandlerPlainWriter : public HandlerWriterBase {
 	public:
-		DatahandlerPlainWriter (std::shared_ptr<libgpsfile2::provider::ProviderWriterBase>, const std::string&);
-		~DatahandlerPlainWriter (void);
+		HandlerPlainWriter (std::unique_ptr<provider::ProviderWriterBase>, const std::string&);
+		~HandlerPlainWriter (void);
 
 		bool write (std::istream *, const bool&) override;
-
-	private:
-		std::shared_ptr<libgpsfile2::provider::ProviderWriterBase> data_provider;
 	};
 }
 

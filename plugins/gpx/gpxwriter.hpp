@@ -6,13 +6,13 @@
 #include <gpx/Parser.h>
 #include <gpsdata/types/ObjectTime.hpp>
 
-#include "libgpsfile2.hpp"
+#include <libgpsfile2/DatahandlerRoute.hpp>
 
 #include "gpxplugin.hpp"
 
-class GpxWriter: public libgpsfile2::BaseDatahandlerRouteWriterPlugin {
+class GpxWriter: public libgpsfile2::HandlerWriterBase {
 public:
-	GpxWriter (const std::shared_ptr<const GpxPlugin>&, std::shared_ptr<libgpsfile2::provider::ProviderRouteWriterBase>, const std::string&);
+	GpxWriter (const std::shared_ptr<const GpxPlugin>, std::unique_ptr<libgpsfile2::provider::ProviderWriterBase>, const std::string&);
 	~GpxWriter (void);
 
 private:
@@ -22,7 +22,7 @@ private:
 	bool parseData (gpx::GPX *);
 
 	std::shared_ptr<const GpxPlugin> _base_instance;
-	std::shared_ptr<libgpsfile2::provider::ProviderRouteWriterBase> _dp;
+	//std::unique_ptr<libgpsfile2::provider::ProviderRouteWriterBase> _dp;
 	gpx::Report *_reporter;
 	gpx::Parser *_parser;
 

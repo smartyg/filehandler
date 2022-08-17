@@ -18,18 +18,18 @@ COMMON_DEBUG_OPTIONS = -Wall -Wextra -W -Wshadow -Wpointer-arith -Wcast-qual -Wc
 	-Wundef -Wunreachable-code -Wlogical-op -Wfloat-equal -Wno-float-equal \
 	-Wstrict-aliasing=2 -Wredundant-decls -Werror \
 	-fno-omit-frame-pointer -ffloat-store -fno-common -fstrict-aliasing \
-	-fvar-tracking -fvar-tracking-assignments  -fconcepts -ggdb3 -O0
+	-fvar-tracking -fvar-tracking-assignments -ggdb3 -O0
 AM_CFLAGS += $(COMMON_DEBUG_OPTIONS) \
 	-Wbad-function-cast -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs \
 	-Wold-style-definition
 AM_CXXFLAGS += $(COMMON_DEBUG_OPTIONS) \
-	-Wabi -Wconversion-null  -Wctor-dtor-privacy -Wdelete-non-virtual-dtor \
+	-Wconversion-null  -Wctor-dtor-privacy -Wdelete-non-virtual-dtor \
 	-Wnarrowing -Wnoexcept -Wnon-virtual-dtor  -Wreorder -Wstrict-null-sentinel \
 	-Wno-non-template-friend  -Wold-style-cast -Woverloaded-virtual  -Wno-pmf-conversions \
 	-Wsign-promo
 else
 AM_CFLAGS += -flto
-AM_CXXFLAGS += -flto -fconcepts
+AM_CXXFLAGS += -flto
 endif
 
 export AM_CFLAGS
@@ -43,7 +43,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgpsfile2.pc
 
 lib_LTLIBRARIES = libgpsfile2.la
-libgpsfile2_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\"
+libgpsfile2_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 
 ## Define the source file list for the "libexample-@EXAMPLE_API_VERSION@.la"
 ## target.  Note that @EXAMPLE_API_VERSION@ is not interpreted by Automake and
@@ -56,7 +56,7 @@ libgpsfile2_la_SOURCES = src/GpsfilePlugin.cpp \
 	src/DatahandlerPlain.cpp \
 	src/utils/Iobuf.cpp
 
-libgpsfile2_la_LIBADD = @DL_LIBS@
+libgpsfile2_la_LIBADD = @DL_LIBS@ @GPSDATA_UTILS_LIBS@
 
 ## Instruct libtool to include ABI version information in the generated shared
 ## library file (.so).  The library ABI version is defined in configure.ac, so
@@ -92,7 +92,7 @@ nobase_libgpsfile2_la_include_HEADERS = include/libgpsfile2.hpp \
 # 	src/libsad/plugins/gps/gpswriter.hpp
 
 pkglib_LTLIBRARIES = gpx.la
-gpx_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" @GPX_CFLAGS@
+gpx_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" @GPX_CFLAGS@ @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 gpx_la_LDFLAGS = -module -avoid-version -shared
 gpx_la_LIBADD = libgpsfile2.la @GPX_LIBS@
 gpx_la_SOURCES = plugins/gpx/plugin.cpp \
@@ -111,19 +111,21 @@ noinst_HEADERS += plugins/gpx/gpxplugin.hpp \
 # log_la_SOURCES = libsad/plugins/log/LogDataFilePlugin.cpp
 # noinst_HEADERS += libsad/plugins/log/LogDataFilePlugin.hpp
 
+if EXAMPLE
 bin_PROGRAMS = read_gpx
-read_gpx_LDADD = libgpsfile2.la gpx.la $(gpx_la_LIBADD)
+read_gpx_LDADD = libgpsfile2.la
 read_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
-read_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\"
+read_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 read_gpx_SOURCES = examples/read_gpx.cpp
 
 # bin_PROGRAMS += read_write_gpx
 # read_write_gpx_LDADD = libgpsfile2.la gpx.la $(gpx_la_LIBADD)
 # read_write_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
-# read_write_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\"
+# read_write_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 # read_write_gpx_SOURCES = examples/read_write_gpx.cpp
+endif
 
-EXTRA_DIST = VERSION @PROGRAM_NAME@.spec
+EXTRA_DIST = VERSION ChangeLog README AUTHORS LICENSE @PROGRAM_NAME@.spec
 
 ## Only try to update the ChangeLog file when git is availible to report all the changes.
 if HAVE_GIT

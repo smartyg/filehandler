@@ -9,6 +9,7 @@
 #include "../BasePlugin.hpp"
 
 namespace libgpsfile2::provider {
+
 	// Base data handler class
 	class ProviderBase : public libgpsfile2::BasePlugin {
 	public:
@@ -69,12 +70,6 @@ namespace libgpsfile2::provider {
 
 		//virtual GpsStatistics_ptr_const getTable (void) const = 0;
 	};
-
-	//DataProviderSimple *create_DataProviderSimple (Libsad *, const FilterInfoType, auto);
-	//BaseDataProviderWriter_ptr create_DataProviderRouteWriter (Libsad_ptr, const FilterInfoType&);
-	//BaseDataProviderReader_ptr create_DataProviderRouteReader (Libsad_ptr, const FilterInfoType&);
-	//BaseDataProviderReader_ptr create_DataProviderTableReader (Libsad_ptr, const FilterInfoType&);
-	//BaseDataProviderReader_ptr create_DataProviderWaypointReader (Libsad_ptr, const FilterInfoType&);
 }
 
 #endif /* _X_LIBGPSFILE2_PROVIDER_ */

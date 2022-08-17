@@ -6,17 +6,21 @@
 #include <memory>
 
 #include "provider.hpp"
+
 #include <gpsdata.hpp>
-#include <gpsdata/traits/GpsFactory.hpp>
+#include <gpsdata/traits/GpsRoute.hpp>
 
 namespace libgpsfile2::provider {
-	template<gpsdata::GpsDataFactory F, class R = gpsdata::GpsRoute<F>>
-	class ProviderGpsRouteWriter final : public ProviderRouteWriterBase, std::enable_shared_from_this<ProviderGpsRouteWriter<F, R>> {
-		const std::shared_ptr<const F> _factory;
-		bool _finished;
-		std::vector<std::shared_ptr<R>> _routes;
+	template<gpsdata::GpsRouteTrait R>
+	class ProviderGpsRouteWriter final : public ProviderRouteWriterBase {//, std::enable_shared_from_this<ProviderGpsRouteWriter<R>> {
+		using GpsFactory = typename R::GpsFactory;
 
-		ProviderGpsRouteWriter (const std::shared_ptr<const F>& factory) : _factory(factory) { }
+		const std::shared_ptr<const GpsFactory> _factory;
+		std::vector<std::shared_ptr<R>> _routes;
+		bool _finished;
+
+		ProviderGpsRouteWriter (const std::shared_ptr<const GpsFactory>& factory) : _factory(factory), _finished(false) { }
+
 		ProviderGpsRouteWriter (void) = delete;
 		ProviderGpsRouteWriter (const ProviderGpsRouteWriter&) = delete;                // copy constructor
 		ProviderGpsRouteWriter (ProviderGpsRouteWriter&&) noexcept = delete;            // move constructor
@@ -28,17 +32,17 @@ namespace libgpsfile2::provider {
 			this->_finished = true;
 			this->_routes.clear ();
 		}
-
-		std::shared_ptr<ProviderGpsRouteWriter> getptr (void) {
+/*
+		std::shared_ptr<ProviderGpsRouteWriter<R>> getptr (void) {
 			return this->shared_from_this ();
 		}
-
+*/
 		bool setNumTracks (const unsigned short& num) override {
 			if (this->_finished) return false;
 			if (num < this->_routes.size ()) return false;
 			this->_routes.resize (num);
 			for (auto& route : this->_routes) {
-				if (!route) route = R::create (this->_factory);
+				if (!route) route = R::template create<R> (this->_factory);
 			}
 			return true;
 		}
@@ -73,14 +77,7 @@ namespace libgpsfile2::provider {
 		bool addTrackPoint (const unsigned short& route_num, const unsigned short& segment_num, const gpsdata::ObjectTime& time) override {
 			if (this->_finished) return false;
 			if (this->_routes.at (route_num)->hasPoint (time)) return false;
-
-			if (!this->_routes.at (route_num)->hasSegment (segment_num)) {
-				std::shared_ptr<typename R::Segment> s = R::Segment::create (segment_num, this->_factory);
-				this->_routes.at (route_num)->addSegment (std::move(s));
-			}
-
-			std::shared_ptr<typename R::Point> p = R::Point::create (time, this->_factory);
-			return this->_routes.at (route_num)->addPoint (segment_num, std::move(p));
+			return this->_routes.at (route_num)->addPoint (segment_num, time);
 		}
 
 		bool addTrackPointData (const unsigned short& route_num, const unsigned short& segment_num, const gpsdata::ObjectTime& time, const std::string& type, const std::string& value) override {
@@ -134,9 +131,12 @@ namespace libgpsfile2::provider {
 		std::vector<std::shared_ptr<R>> getRoutes (void) const noexcept {
 			return this->_routes;
 		}
-
-		[[nodiscard]] static std::shared_ptr<ProviderGpsRouteWriter> create (const std::shared_ptr<const F>& factory) {
-			return std::shared_ptr<ProviderGpsRouteWriter>(new ProviderGpsRouteWriter (factory));
+/*
+		[[nodiscard]] static std::shared_ptr<ProviderGpsRouteWriter<R>> create (const std::shared_ptr<const GpsFactory>& factory) {
+			return std::shared_ptr<ProviderGpsRouteWriter<R>>(new ProviderGpsRouteWriter (factory));
+		}*/
+		[[nodiscard]] static std::unique_ptr<ProviderGpsRouteWriter<R>> create (const std::shared_ptr<const GpsFactory>& factory) {
+			return std::unique_ptr<ProviderGpsRouteWriter<R>>(new ProviderGpsRouteWriter (factory));
 		}
 	};
 }

@@ -18,15 +18,16 @@
 
 #define GPX_TIME_FORMATS { "%Y-%m-%dT%TZ" }
 
+using libgpsfile2::provider::ProviderWriterBase;
 using libgpsfile2::provider::ProviderRouteWriterBase;
 using libgpsfile2::utils::Iobuf;
 using gpsdata::ObjectTime;
 using gpsdata::utils::PointDate;
 
-GpxWriter::GpxWriter(const std::shared_ptr<const GpxPlugin>& base, std::shared_ptr<ProviderRouteWriterBase> dp, const std::string& path) : BaseDatahandlerPlugin (path), BaseDatahandlerWriterPlugin(path), BaseDatahandlerRouteWriterPlugin(path) {
+GpxWriter::GpxWriter (const std::shared_ptr<const GpxPlugin> base, std::unique_ptr<ProviderWriterBase> dp, const std::string& path) : HandlerBase (path), HandlerWriterBase (std::move (dp), path) {
 	DEBUG_MSG("GpxWriter::%s ()\n", __func__);
 	this->_base_instance = base;
-	this->_dp = dp;
+	//this->_dp = dp;
 	this->_reporter = new GpxReport ();
 	this->_parser = new gpx::Parser (this->_reporter);
 }
@@ -34,7 +35,7 @@ GpxWriter::GpxWriter(const std::shared_ptr<const GpxPlugin>& base, std::shared_p
 GpxWriter::~GpxWriter (void) {
 	DEBUG_MSG("GpxWriter::%s ()\n", __func__);
 	this->_base_instance = nullptr;
-	this->_dp = nullptr;
+	//this->_dp = nullptr;
 	if (this->_reporter != nullptr) delete this->_reporter;
 	if (this->_parser != nullptr) delete this->_parser;
 }
@@ -66,7 +67,8 @@ bool GpxWriter::parseData (gpx::GPX *root) {
 		return false;
 	}
 
-	this->_dp->setNumTracks(root->trks ().list ().size ());
+	assert (this->_dp);
+	this->_dp->setNumTracks (root->trks ().list ().size ());
 
 	unsigned short route = 0;
 	for (gpx::TRK *track : root->trks().list()) {

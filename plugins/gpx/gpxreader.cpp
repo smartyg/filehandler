@@ -8,18 +8,18 @@
 #include "gpxplugin.hpp"
 
 //using namespace libgpsfile2::datahandler;
-using libgpsfile2::provider::ProviderRouteReaderBase;
+using libgpsfile2::provider::ProviderReaderBase;
 
-GpxReader::GpxReader (const std::shared_ptr<const GpxPlugin>& base, const std::shared_ptr<const ProviderRouteReaderBase>& dp, const std::string& path) : BaseDatahandlerPlugin (path), BaseDatahandlerReaderPlugin (path), BaseDatahandlerRouteReaderPlugin (path)  {
+GpxReader::GpxReader (const std::shared_ptr<const GpxPlugin> base, std::unique_ptr<ProviderReaderBase> dp, const std::string& path) : HandlerBase (path), HandlerReaderBase (std::move (dp), path) {
 	this->_base_instance = base;
-	this->_dp = dp;
+	//this->_dp = dp;
 	this->_parser = new gpx::Writer ();
 	this->_root = new gpx::GPX ();
 }
 
 GpxReader::~GpxReader (void) {
 	this->_base_instance = nullptr;
-	this->_dp = nullptr;
+	this->_dp.reset ();
 	delete this->_parser;
 	delete this->_root;
 }
