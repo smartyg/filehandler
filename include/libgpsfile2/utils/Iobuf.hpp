@@ -1,5 +1,5 @@
-#ifndef _X_LIBGPSFILE2_IOBUF_
-#define _X_LIBGPSFILE2_IOBUF_
+#ifndef _LIBGPSFILE2__UTILS_IOBUF_
+#define _LIBGPSFILE2__UTILS_IOBUF_
 
 #include <cstring>
 #include <streambuf>
@@ -210,4 +210,4 @@ namespace libgpsfile2::utils {
 	typedef basic_iobuf<char> Iobuf;
 }
 
-#endif /* _X_LIBGPSFILE2_IOBUF_ */
+#endif /* _LIBGPSFILE2__UTILS_IOBUF_ */

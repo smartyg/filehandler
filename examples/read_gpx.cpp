@@ -4,15 +4,17 @@
 #include <string>
 
 #include <gpsdata/utils/Logger.hpp>
-#include "libgpsfile2.hpp"
+#include <libgpsfile2.hpp>
+/*
 #include "libgpsfile2/ConstValue.hpp"
 #include "libgpsfile2/provider/ProviderGpsRouteWriter.hpp"
+*/
 #include "gpsdata/utils/GpsDataFactoryBasic.hpp"
 
 #include "PrintGpsRoute.hpp"
 
 using libgpsfile2::GpsfilePlugin;
-using libgpsfile2::HandlerWriterBase;
+using libgpsfile2::handler::HandlerWriterBase;
 using libgpsfile2::provider::ProviderGpsRouteWriter;
 using libgpsfile2::provider::ProviderRouteWriterBase;
 
@@ -35,7 +37,7 @@ int main (void) {
 	auto provider = ProviderGpsRouteWriter<GpsRouteType>::create (factory);
 
 	std::cout << "register type\n";
-	libgpsfile2::DatahandlerType route_writer;
+	libgpsfile2::HandlerType route_writer;
 	GpsfilePlugin::registerWriterType<ProviderRouteWriterBase> (route_writer);
 	//std::cout << "register type\n";
 

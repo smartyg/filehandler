@@ -1,20 +1,23 @@
 #include "config.h"
+#include <features.h>
 
 #include "gpxreader.hpp"
 
+#include <memory>
+#include <ostream>
 #include <gpx/Writer.h>
+#include <libgpsfile2/provider/ProviderRouteReaderBase.hpp>
 
-#include "libgpsfile2.hpp"
 #include "gpxplugin.hpp"
 
-//using namespace libgpsfile2::datahandler;
-using libgpsfile2::provider::ProviderReaderBase;
+using libgpsfile2::provider::ProviderRouteReaderBase;
 
-GpxReader::GpxReader (const std::shared_ptr<const GpxPlugin> base, std::unique_ptr<ProviderReaderBase> dp, const std::string& path) : HandlerBase (path), HandlerReaderBase (std::move (dp), path) {
+GpxReader::GpxReader (const std::shared_ptr<GpxPlugin> base, std::unique_ptr<ProviderRouteReaderBase> dp, const std::string& path) : HandlerBase (path), HandlerReaderBase (std::move (dp), path) {
 	this->_base_instance = base;
 	//this->_dp = dp;
 	this->_parser = new gpx::Writer ();
 	this->_root = new gpx::GPX ();
+	this->_provider = dynamic_cast<ProviderRouteReaderBase*> (this->_dp.get ());
 }
 
 GpxReader::~GpxReader (void) {

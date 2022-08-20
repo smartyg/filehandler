@@ -1,25 +1,26 @@
-#ifndef _X_PRIVATE_DATAPROVIDERROUTEWRITERPRIVATE_HPP_
-#define _X_PRIVATE_DATAPROVIDERROUTEWRITERPRIVATE_HPP_
+#ifndef _LIBGPSFILE2_PROVIDER_PROVIDERGPSROUTEWRITER_
+#define _LIBGPSFILE2_PROVIDER_PROVIDERGPSROUTEWRITER_
 
 #include <memory>
 #include <string>
-#include <memory>
-
-#include "provider.hpp"
-
+#include <vector>
+#include <stdexcept>
 #include <gpsdata.hpp>
 #include <gpsdata/traits/GpsRoute.hpp>
 
+#include <libgpsfile2/provider/ProviderRouteWriterBase.hpp>
+
 namespace libgpsfile2::provider {
+
 	template<gpsdata::GpsRouteTrait R>
-	class ProviderGpsRouteWriter final : public ProviderRouteWriterBase {//, std::enable_shared_from_this<ProviderGpsRouteWriter<R>> {
+	class ProviderGpsRouteWriter final : public ProviderRouteWriterBase {
 		using GpsFactory = typename R::GpsFactory;
 
-		const std::shared_ptr<const GpsFactory> _factory;
+		const std::shared_ptr<GpsFactory> _factory;
 		std::vector<std::shared_ptr<R>> _routes;
 		bool _finished;
 
-		ProviderGpsRouteWriter (const std::shared_ptr<const GpsFactory>& factory) : _factory(factory), _finished(false) { }
+		ProviderGpsRouteWriter (const std::shared_ptr<GpsFactory>& factory) : _factory(factory), _finished(false) { }
 
 		ProviderGpsRouteWriter (void) = delete;
 		ProviderGpsRouteWriter (const ProviderGpsRouteWriter&) = delete;                // copy constructor
@@ -32,11 +33,7 @@ namespace libgpsfile2::provider {
 			this->_finished = true;
 			this->_routes.clear ();
 		}
-/*
-		std::shared_ptr<ProviderGpsRouteWriter<R>> getptr (void) {
-			return this->shared_from_this ();
-		}
-*/
+
 		bool setNumTracks (const unsigned short& num) override {
 			if (this->_finished) return false;
 			if (num < this->_routes.size ()) return false;
@@ -116,7 +113,6 @@ namespace libgpsfile2::provider {
 		}
 
 		bool setData (const std::string&) const override {
-			//throw libsad::exception::MethodNotAvalitibleInSpecializedProvider ();
 			throw std::runtime_error ("MethodNotAvalitibleInSpecializedProvider");
 			return false;
 		}
@@ -131,14 +127,11 @@ namespace libgpsfile2::provider {
 		std::vector<std::shared_ptr<R>> getRoutes (void) const noexcept {
 			return this->_routes;
 		}
-/*
-		[[nodiscard]] static std::shared_ptr<ProviderGpsRouteWriter<R>> create (const std::shared_ptr<const GpsFactory>& factory) {
-			return std::shared_ptr<ProviderGpsRouteWriter<R>>(new ProviderGpsRouteWriter (factory));
-		}*/
-		[[nodiscard]] static std::unique_ptr<ProviderGpsRouteWriter<R>> create (const std::shared_ptr<const GpsFactory>& factory) {
+
+		[[nodiscard]] static std::unique_ptr<ProviderGpsRouteWriter<R>> create (const std::shared_ptr<GpsFactory>& factory) {
 			return std::unique_ptr<ProviderGpsRouteWriter<R>>(new ProviderGpsRouteWriter (factory));
 		}
 	};
 }
 
-#endif /* _X_PRIVATE_DATAPROVIDERROUTEWRITERPRIVATE_HPP_ */
+#endif /* _LIBGPSFILE2_PROVIDER_PROVIDERGPSROUTEWRITER_ */

@@ -1,4 +1,5 @@
 #include "config.h"
+#include <features.h>
 
 #include "gpxreport.hpp"
 
@@ -6,8 +7,6 @@
 #include <gpx/Report.h>
 #include <gpx/Node.h>
 #include <gpsdata/utils/Logger.hpp>
-
-#include "libgpsfile2.hpp"
 
 GpxReport::GpxReport (void) {
 }

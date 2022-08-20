@@ -52,8 +52,11 @@ libgpsfile2_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$
 ## Note that it is not necessary to list header files
 ## which are already listed elsewhere in a _HEADERS variable assignment.
 libgpsfile2_la_SOURCES = src/GpsfilePlugin.cpp \
-	src/Datahandler.cpp \
-	src/DatahandlerPlain.cpp \
+	src/handler/HandlerBase.cpp \
+	src/handler/HandlerPlainReader.cpp \
+	src/handler/HandlerPlainWriter.cpp \
+	src/handler/HandlerReaderBase.cpp \
+	src/handler/HandlerWriterBase.cpp \
 	src/utils/Iobuf.cpp
 
 libgpsfile2_la_LIBADD = @DL_LIBS@ @GPSDATA_UTILS_LIBS@
@@ -63,8 +66,8 @@ libgpsfile2_la_LIBADD = @DL_LIBS@ @GPSDATA_UTILS_LIBS@
 ## that all version information is kept in one place.
 libgpsfile2_la_LDFLAGS = -version-info @LIBRARY_CURRENT_VERSION@:@LIBRARY_REVISION_VERSION@:@LIBRARY_AGE_VERSION@
 
-noinst_HEADERS = src/DatahandlerPlain.hpp
-
+noinst_HEADERS = src/handler/HandlerPlainReader.hpp \
+	src/handler/HandlerPlainWriter.hpp
 
 ## Define the list of public header files and their install location.  The
 ## nobase_ prefix instructs Automake to not strip the directory part from each
@@ -74,10 +77,27 @@ noinst_HEADERS = src/DatahandlerPlain.hpp
 libgpsfile2_la_includedir = $(includedir)
 nobase_libgpsfile2_la_include_HEADERS = include/libgpsfile2.hpp \
 	include/libgpsfile2/GpsfilePlugin.hpp \
-	include/libgpsfile2/BasePlugin.hpp \
-	include/libgpsfile2/Datahandler.hpp \
-	include/libgpsfile2/provider/provider.hpp \
-	include/libgpsfile2/utils/Iobuf.hpp
+	include/libgpsfile2/handler/HandlerBase.hpp \
+	include/libgpsfile2/handler/HandlerReaderBase.hpp \
+	include/libgpsfile2/handler/HandlerWriterBase.hpp \
+	include/libgpsfile2/PluginHandler.hpp \
+	include/libgpsfile2/utils/Iobuf.hpp \
+	include/libgpsfile2/utils/dynamic_unique_ptr_cast.hpp \
+	include/libgpsfile2/types/HandlerType.hpp \
+	include/libgpsfile2/types/PluginDetails.hpp \
+	include/libgpsfile2/types/BasePlugin.hpp \
+	include/libgpsfile2/traits/common.hpp \
+	include/libgpsfile2/traits/HandlerReaderTrait.hpp \
+	include/libgpsfile2/traits/HandlerWriterTrait.hpp \
+	include/libgpsfile2/traits/ProviderReaderTrait.hpp \
+	include/libgpsfile2/traits/ProviderWriterTrait.hpp \
+	include/libgpsfile2/provider/ProviderReaderBase.hpp \
+	include/libgpsfile2/provider/ProviderRouteWriterBase.hpp \
+	include/libgpsfile2/provider/ProviderGpsRouteReader.hpp \
+	include/libgpsfile2/provider/ProviderRouteReaderBase.hpp \
+	include/libgpsfile2/provider/ProviderBase.hpp \
+	include/libgpsfile2/provider/ProviderGpsRouteWriter.hpp \
+	include/libgpsfile2/provider/ProviderWriterBase.hpp
 
 # pkglib_LTLIBRARIES = gps.la
 # gps_la_CPPFLAGS = -Isrc/libsad/include -DLOCALEDIR=\"$(localedir)\"

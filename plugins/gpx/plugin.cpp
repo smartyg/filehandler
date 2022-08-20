@@ -1,11 +1,18 @@
 #include "config.h"
+#include <features.h>
 
 #include <memory>
-
-#include "libgpsfile2.hpp"
-#include "libgpsfile2/ConstValue.hpp"
-#include "libgpsfile2/traits/HandlerProviderPair.hpp"
-
+#include <string>
+#include <utility>
+#include <libgpsfile2/GpsfilePlugin.hpp>
+#include <libgpsfile2/PluginHandler.hpp>
+#include <libgpsfile2/types/BasePlugin.hpp>
+#include <libgpsfile2/types/HandlerType.hpp>
+#include <libgpsfile2/types/PluginDetails.hpp>
+#include <libgpsfile2/handler/HandlerReaderBase.hpp>
+#include <libgpsfile2/handler/HandlerWriterBase.hpp>
+#include <libgpsfile2/provider/ProviderRouteReaderBase.hpp>
+#include <libgpsfile2/provider/ProviderRouteWriterBase.hpp>
 
 #include "gpxplugin.hpp"
 #include "gpxreader.hpp"
@@ -13,40 +20,35 @@
 
 #define DATA_FILE_TYPE "gpx"
 
-using libgpsfile2::provider::ProviderReaderBase;
-using libgpsfile2::provider::ProviderWriterBase;
 using libgpsfile2::provider::ProviderRouteReaderBase;
 using libgpsfile2::provider::ProviderRouteWriterBase;
-using libgpsfile2::HandlerReaderBase;
-using libgpsfile2::HandlerWriterBase;
-//using libgpsfile2::HandlerRouteReaderBase;
-//using libgpsfile2::HandlerRouteWriterBase;
-using libgpsfile2::pluginDetails;
-using libgpsfile2::pluginDatahandler;
+using libgpsfile2::handler::HandlerReaderBase;
+using libgpsfile2::handler::HandlerWriterBase;
+using libgpsfile2::PluginDetails;
+using libgpsfile2::PluginHandler;
 using libgpsfile2::GpsfilePlugin;
 using libgpsfile2::BasePlugin;
-using libgpsfile2::DatahandlerType;
+using libgpsfile2::HandlerType;
 
 void __attribute__((constructor)) register_handler();
 void __attribute__((destructor)) remove_handler();
 
-std::unique_ptr<HandlerReaderBase> create_read_class (const std::shared_ptr<const BasePlugin>&, std::unique_ptr<ProviderReaderBase>, const std::string&);
-std::unique_ptr<HandlerWriterBase> create_write_class (const std::shared_ptr<const BasePlugin>&, std::unique_ptr<ProviderWriterBase>, const std::string&);
+std::unique_ptr<HandlerReaderBase> create_reader_class (const std::shared_ptr<BasePlugin>, std::unique_ptr<ProviderRouteReaderBase>, const std::string&);
+std::unique_ptr<HandlerWriterBase> create_writer_class (const std::shared_ptr<BasePlugin>, std::unique_ptr<ProviderRouteWriterBase>, const std::string&);
 
-std::unique_ptr<HandlerReaderBase> create_read_class (const std::shared_ptr<const BasePlugin>& base, std::unique_ptr<ProviderReaderBase> dp, const std::string& path) {
-	std::unique_ptr<HandlerReaderBase> reader = std::make_unique<GpxReader>(std::dynamic_pointer_cast<const GpxPlugin>(base), std::move (dp), path);
+std::unique_ptr<HandlerReaderBase> create_reader_class (const std::shared_ptr<BasePlugin> base, std::unique_ptr<ProviderRouteReaderBase> dp, const std::string& path) {
+	std::unique_ptr<HandlerReaderBase> reader = std::make_unique<GpxReader>(std::dynamic_pointer_cast<GpxPlugin>(base), std::move (dp), path);
 	return reader;
 }
 
-std::unique_ptr<HandlerWriterBase> create_write_class (const std::shared_ptr<const BasePlugin>& base, std::unique_ptr<ProviderWriterBase> dp, const std::string& path) {
-	std::unique_ptr<HandlerWriterBase> writer = std::make_unique<GpxWriter>(std::dynamic_pointer_cast<const GpxPlugin>(base), std::move (dp), path);
+std::unique_ptr<HandlerWriterBase> create_writer_class (const std::shared_ptr<BasePlugin> base, std::unique_ptr<ProviderRouteWriterBase> dp, const std::string& path) {
+	std::unique_ptr<HandlerWriterBase> writer = std::make_unique<GpxWriter>(std::dynamic_pointer_cast<GpxPlugin>(base), std::move (dp), path);
 	return writer;
 }
 
 void register_handler (void) {
-	//std::cout << "call register handler of gpx plugin\n";
-	auto details = std::make_shared<pluginDetails>();
-	auto handlers = std::make_shared<pluginDatahandler>();
+	auto details = std::make_shared<PluginDetails>();
+	auto handlers = std::make_shared<PluginHandler>(std::make_shared<GpxPlugin>());
 
 	details->name = "gpx datafile handler";
 	details->author = "Martijn Goedhart";
@@ -54,18 +56,17 @@ void register_handler (void) {
 	details->major_version = 0;
 	details->minor_version = 1;
 
-	DatahandlerType route_reader;
-	DatahandlerType route_writer;
+	HandlerType route_reader;
+	HandlerType route_writer;
 	GpsfilePlugin::registerReaderType<ProviderRouteReaderBase> (route_reader);
 	GpsfilePlugin::registerWriterType<ProviderRouteWriterBase> (route_writer);
 
-	handlers->instance = std::make_shared<GpxPlugin>();
-	handlers->reader_creators[static_cast<int>(route_reader)] = create_read_class;
-	handlers->writer_creators[static_cast<int>(route_writer)] = create_write_class;
+	handlers->addReader (route_reader, create_reader_class);
+	handlers->addWriter (route_writer, create_writer_class);
 
 	GpsfilePlugin::registerPlugin (DATA_FILE_TYPE, details, handlers);
 }
 
 void remove_handler (void) {
-	GpsfilePlugin::removePlugin(DATA_FILE_TYPE);
+	GpsfilePlugin::removePlugin (DATA_FILE_TYPE);
 }

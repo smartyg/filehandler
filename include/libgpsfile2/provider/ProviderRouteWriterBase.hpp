@@ -1,43 +1,12 @@
-#ifndef _X_LIBGPSFILE2_PROVIDER_
-#define _X_LIBGPSFILE2_PROVIDER_
+#ifndef _LIBGPSFILE2_PROVIDER_PROVIDERROUTEWRITERBASE_
+#define _LIBGPSFILE2_PROVIDER_PROVIDERROUTEWRITERBASE_
 
-#include <list>
 #include <string>
-#include <memory>
 #include <gpsdata/types/ObjectTime.hpp>
 
-#include "../BasePlugin.hpp"
+#include <libgpsfile2/provider/ProviderWriterBase.hpp>
 
 namespace libgpsfile2::provider {
-
-	// Base data handler class
-	class ProviderBase : public libgpsfile2::BasePlugin {
-	public:
-		virtual ~ProviderBase (void) = default;
-	};
-
-	// Base data handler class
-	class ProviderReaderBase : virtual public ProviderBase {
-	public:
-		virtual ~ProviderReaderBase (void) = default;
-		virtual const std::string getData (void) const = 0;
-	};
-
-	class ProviderWriterBase : virtual public ProviderBase {
-	public:
-		virtual ~ProviderWriterBase (void) = default;
-
-		virtual bool setData (const std::string&) const = 0;
-		virtual void finished (void) = 0;
-	};
-
-	// Data providers used for data handlers from plugins.
-	class ProviderRouteReaderBase : public ProviderReaderBase {
-	public:
-		virtual ~ProviderRouteReaderBase (void) = default;
-
-		//virtual GpsRoute_ptr_const getRoute (void) const = 0;
-	};
 
 	class ProviderRouteWriterBase : public ProviderWriterBase {
 	public:
@@ -56,20 +25,6 @@ namespace libgpsfile2::provider {
 		virtual bool addTrackPointData (const unsigned short&, const unsigned short&, const gpsdata::ObjectTime&, const std::string&, float) = 0;
 		virtual bool addTrackPointData (const unsigned short&, const unsigned short&, const gpsdata::ObjectTime&, const std::string&, double) = 0;
 	};
-
-	class ProviderWaypointReaderBase : public ProviderReaderBase {
-	public:
-		virtual ~ProviderWaypointReaderBase (void) = default;
-
-		//virtual const std::list<GpsPoint_ptr> getWaypoints (void) const = 0;
-	};
-
-	class ProviderTableReaderBase : public ProviderReaderBase {
-	public:
-		virtual ~ProviderTableReaderBase (void) = default;
-
-		//virtual GpsStatistics_ptr_const getTable (void) const = 0;
-	};
 }
 
-#endif /* _X_LIBGPSFILE2_PROVIDER_ */
+#endif /* _LIBGPSFILE2_PROVIDER_PROVIDERROUTEWRITERBASE_ */

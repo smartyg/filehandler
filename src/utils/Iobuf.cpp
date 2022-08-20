@@ -1,4 +1,5 @@
 #include "config.h"
+#include <features.h>
 
 #include "libgpsfile2/utils/Iobuf.hpp"
 
