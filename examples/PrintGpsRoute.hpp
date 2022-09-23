@@ -5,10 +5,10 @@
 
 template<gpsdata::GpsRouteTrait R>
 void printGpsRoute (const std::shared_ptr<R>& route) {
-	std::cout << "--- route " << route->getTitle () << " (" << std::to_string (route->getId ()) << ") ---" << std::endl;
-	std::cout << " activity type: " << route->getFactory ()->getActivityTypeString (route->getActivityType ()) << std::endl;
+	std::cout << "--- route: " << route->getTitle () << " (" << std::to_string (route->getId ()) << ") ---" << std::endl;
 	std::cout << " summery: " << route->getSummary () << std::endl;
 	std::cout << " details: " << route->getDetails () << std::endl;
+	std::cout << " activity type: " << route->getFactory ()->getActivityTypeString (route->getActivityType ()) << std::endl;
 	std::cout << " tz offset: " << std::to_string (route->getTimezoneOffset ()) << std::endl;
 
 	std::cout << " --- statistics ---" << std::endl;
@@ -30,7 +30,7 @@ void printGpsRoute (const std::shared_ptr<R>& route) {
 
 		std::cout << "   --- points ---" << std::endl;
 		for (const auto& point : *segment) {
-			std::cout << "    point (" << std::to_string (point->getTime ()) << ")" << std::endl;
+			std::cout << "    point (" << std::to_string (point->getTime ().get ()) << ")" << std::endl;
 			for (const auto& data : *point) {
 				std::string str;
 				if (point->getFactory ()->getValue (data, str, true))

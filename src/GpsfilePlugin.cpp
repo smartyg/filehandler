@@ -252,11 +252,11 @@ void GpsfilePlugin::loadPlugins (const std::list<std::string>& plugin_directorie
 		DEBUG_MSG("scan directory: %s\n", scan_dir);
 		if((j = scandir (scan_dir, &entry, loadPluginFilter, nullptr)) != -1) {
 			for(i = 0; i < j; i++) {
-				std::string file = std::string (scan_dir) + "/" + entry[i]->d_name;
+				const std::string file = std::string (scan_dir) + "/" + entry[i]->d_name;
 				INFO_MSG("try to load module: %s\n", file.c_str ());
 				void *plugin = dlopen(file.c_str (), RTLD_NOW);
 				if (!plugin) {
-					WARNING_MSG("Cannot load module %s: %s\n", file, dlerror());
+					WARNING_MSG("Cannot load module %s: %s\n", file.c_str (), dlerror());
 				}
 			}
 		}

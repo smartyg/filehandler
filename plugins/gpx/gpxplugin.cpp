@@ -4,6 +4,7 @@
 #include "gpxplugin.hpp"
 
 GpxPlugin::GpxPlugin (void) {
+	this->init ();
 }
 
 GpxPlugin::~GpxPlugin (void) {

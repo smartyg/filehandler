@@ -68,6 +68,10 @@ AX_DEFINE_SUBST([LIBRARY_CURRENT_VERSION], [0], [current interface version libra
 AX_DEFINE_SUBST([LIBRARY_REVISION_VERSION], [0], [current revision of the interface of this library])
 AX_DEFINE_SUBST([LIBRARY_AGE_VERSION], [0], [age of the interface])
 
+# Set the default flags to empty (instead of '-O2 -g')
+: ${CFLAGS=""}
+: ${CXXFLAGS=""}
+
 # Checks for programs.
 AC_PROG_CXX
 AC_PROG_CC

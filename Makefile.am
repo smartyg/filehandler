@@ -14,7 +14,7 @@ AM_CXXFLAGS =
 if DEBUG
 COMMON_DEBUG_OPTIONS = -Wall -Wextra -W -Wshadow -Wpointer-arith -Wcast-qual -Wcast-align \
 	-Wmissing-declarations -Wno-missing-braces -Wno-missing-field-initializers \
-	-Wformat=1 -Wswitch-default -Wswitch-enum -Wstrict-overflow=5 -Winline \
+	-Wformat=1 -Wswitch-default -Wswitch-enum -Wstrict-overflow=2 \
 	-Wundef -Wunreachable-code -Wlogical-op -Wfloat-equal -Wno-float-equal \
 	-Wstrict-aliasing=2 -Wredundant-decls -Werror \
 	-fno-omit-frame-pointer -ffloat-store -fno-common -fstrict-aliasing \
@@ -23,9 +23,9 @@ AM_CFLAGS += $(COMMON_DEBUG_OPTIONS) \
 	-Wbad-function-cast -Wstrict-prototypes -Wmissing-prototypes -Wnested-externs \
 	-Wold-style-definition
 AM_CXXFLAGS += $(COMMON_DEBUG_OPTIONS) \
-	-Wconversion-null  -Wctor-dtor-privacy -Wdelete-non-virtual-dtor \
-	-Wnarrowing -Wnoexcept -Wnon-virtual-dtor  -Wreorder -Wstrict-null-sentinel \
-	-Wno-non-template-friend  -Wold-style-cast -Woverloaded-virtual  -Wno-pmf-conversions \
+	-Wconversion-null -Wctor-dtor-privacy -Wdelete-non-virtual-dtor \
+	-Wnarrowing -Wnoexcept -Wnon-virtual-dtor -Wreorder -Wstrict-null-sentinel \
+	-Wno-non-template-friend -Wold-style-cast -Woverloaded-virtual -Wno-pmf-conversions \
 	-Wsign-promo
 else
 AM_CFLAGS += -flto
@@ -91,13 +91,42 @@ nobase_libgpsfile2_la_include_HEADERS = include/libgpsfile2.hpp \
 	include/libgpsfile2/traits/HandlerWriterTrait.hpp \
 	include/libgpsfile2/traits/ProviderReaderTrait.hpp \
 	include/libgpsfile2/traits/ProviderWriterTrait.hpp \
-	include/libgpsfile2/provider/ProviderReaderBase.hpp \
-	include/libgpsfile2/provider/ProviderRouteWriterBase.hpp \
-	include/libgpsfile2/provider/ProviderGpsRouteReader.hpp \
-	include/libgpsfile2/provider/ProviderRouteReaderBase.hpp \
 	include/libgpsfile2/provider/ProviderBase.hpp \
-	include/libgpsfile2/provider/ProviderGpsRouteWriter.hpp \
-	include/libgpsfile2/provider/ProviderWriterBase.hpp
+	include/libgpsfile2/provider/ProviderReaderBase.hpp \
+	include/libgpsfile2/provider/ProviderWriterBase.hpp \
+	include/libgpsfile2/provider/ProviderRouteBase.hpp \
+	include/libgpsfile2/provider/ProviderRouteReaderBase.hpp \
+	include/libgpsfile2/provider/ProviderRouteWriterBase.hpp
+
+lib_LTLIBRARIES += libgpsfile2-providergpsroute.la
+libgpsfile2_providergpsroute_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@
+
+## Define the source file list for the "libexample-@EXAMPLE_API_VERSION@.la"
+## target.  Note that @EXAMPLE_API_VERSION@ is not interpreted by Automake and
+## will therefore be treated as if it were literally part of the target name,
+## and the variable name derived from that.
+## Note that it is not necessary to list header files
+## which are already listed elsewhere in a _HEADERS variable assignment.
+libgpsfile2_providergpsroute_la_SOURCES = src/ProviderGpsRoute/ProviderGpsRoute.cpp
+
+#libgpsfile2_la_LIBADD = @GPSDATA_UTILS_LIBS@
+
+## Instruct libtool to include ABI version information in the generated shared
+## library file (.so).  The library ABI version is defined in configure.ac, so
+## that all version information is kept in one place.
+libgpsfile2_providergpsroute_la_LDFLAGS = -version-info @LIBRARY_CURRENT_VERSION@:@LIBRARY_REVISION_VERSION@:@LIBRARY_AGE_VERSION@
+
+## Define the list of public header files and their install location.  The
+## nobase_ prefix instructs Automake to not strip the directory part from each
+## filename, in order to avoid the need to define separate file lists for each
+## installation directory.  This only works if the directory hierarchy in the
+## source tree matches the hierarchy at the install location, however.
+libgpsfile2_providergpsroute_la_includedir = $(includedir)
+nobase_libgpsfile2_providergpsroute_la_include_HEADERS = include/libgpsfile2/provider/impl/ProviderGpsRoute.hpp \
+	include/libgpsfile2/provider/impl/ProviderGpsRouteBase.hpp \
+	include/libgpsfile2/provider/impl/ProviderGpsRouteReader.hpp \
+	include/libgpsfile2/provider/impl/ProviderGpsRouteWriter.hpp
+
 
 # pkglib_LTLIBRARIES = gps.la
 # gps_la_CPPFLAGS = -Isrc/libsad/include -DLOCALEDIR=\"$(localedir)\"
@@ -133,10 +162,28 @@ noinst_HEADERS += plugins/gpx/gpxplugin.hpp \
 
 if EXAMPLE
 bin_PROGRAMS = read_gpx
-read_gpx_LDADD = libgpsfile2.la
+read_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la
 read_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
 read_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 read_gpx_SOURCES = examples/read_gpx.cpp
+
+bin_PROGRAMS += write_gpx
+write_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la
+write_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
+write_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
+write_gpx_SOURCES = examples/write_gpx.cpp
+
+bin_PROGRAMS += read_and_write_gpx
+read_and_write_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la
+read_and_write_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
+read_and_write_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
+read_and_write_gpx_SOURCES = examples/read_and_write_gpx.cpp
+
+bin_PROGRAMS += write_and_read_gpx
+write_and_read_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la
+write_and_read_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
+write_and_read_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
+write_and_read_gpx_SOURCES = examples/write_and_read_gpx.cpp
 
 # bin_PROGRAMS += read_write_gpx
 # read_write_gpx_LDADD = libgpsfile2.la gpx.la $(gpx_la_LIBADD)

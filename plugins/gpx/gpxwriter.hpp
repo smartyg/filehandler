@@ -27,8 +27,17 @@ private:
 	libgpsfile2::provider::ProviderRouteWriterBase *_provider;
 	gpx::Report *_reporter;
 	gpx::Parser *_parser;
+	std::map<const std::string, const std::string> _namespace_map;
 
 	void readExtensions (const std::list<gpx::Node *>&, const unsigned short&, const unsigned short&, const gpsdata::ObjectTime&, unsigned short = 0) const noexcept;
+	const std::string_view getNamespaceUri (const std::string_view ns);
+	libgpsfile2::provider::ProviderRouteWriterBase::RouteData getGuessedType (const std::string_view name);
+
+	template<class T>
+	void addExtensionData (T&, gpx::Extensions&);
+
+	static void addData (auto&, const libgpsfile2::provider::ProviderRouteWriterBase::RouteData&, const gpx::Node&);
+	static std::tuple<std::string_view, std::string_view> getNamespace (const std::string&);
 };
 
 #endif /* _X_GPSWRITER_HPP_ */

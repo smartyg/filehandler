@@ -2,28 +2,133 @@
 #define _LIBGPSFILE2_PROVIDER_PROVIDERROUTEWRITERBASE_
 
 #include <string>
-#include <gpsdata/types/ObjectTime.hpp>
+#include <type_traits>
 
 #include <libgpsfile2/provider/ProviderWriterBase.hpp>
+#include <libgpsfile2/provider/ProviderRouteBase.hpp>
 
 namespace libgpsfile2::provider {
+	namespace internal {
+		template<class T>
+		class Base {
+		public:
+			bool addData (const internal::ProviderRouteBase::RouteData& t, const std::string& data) {
+				return (static_cast<T*>(this))->addDataImpl (t, data);
+			}
 
-	class ProviderRouteWriterBase : public ProviderWriterBase {
+			bool addSummary (const internal::ProviderRouteBase::RouteData& t , const std::string& data) {
+				return (static_cast<T*>(this))->addSummaryImpl (t, data);
+			}
+
+			bool finish (void) {
+				return (static_cast<T*>(this))->finishImpl ();
+			}
+		};
+	}
+
+	class ProviderRouteWriterBase : public ProviderWriterBase, public internal::ProviderRouteBase {
 	public:
 		virtual ~ProviderRouteWriterBase (void) = default;
 
-		virtual bool setNumTracks (const unsigned short&) = 0;
-		virtual bool setTrackTitle (const unsigned short&, const std::string&) = 0;
-		virtual bool setTrackSummary (const unsigned short&, const std::string&) = 0;
-		virtual bool setTrackDetails (const unsigned short&, const std::string&) = 0;
-		virtual bool setTrackActivityType (const unsigned short&, const std::string&) = 0;
-		virtual bool setTrackOriginalHash (const unsigned short&, const std::string&) = 0;
-		virtual bool addTrackPoint (const unsigned short&, const unsigned short&, const gpsdata::ObjectTime&) = 0;
-		virtual bool addTrackPointData (const unsigned short&, const unsigned short&, const gpsdata::ObjectTime&, const std::string&, const std::string&) = 0;
-		virtual bool addTrackPointData (const unsigned short&, const unsigned short&, const gpsdata::ObjectTime&, const std::string&, int) = 0;
-		virtual bool addTrackPointData (const unsigned short&, const unsigned short&, const gpsdata::ObjectTime&, const std::string&, long long) = 0;
-		virtual bool addTrackPointData (const unsigned short&, const unsigned short&, const gpsdata::ObjectTime&, const std::string&, float) = 0;
-		virtual bool addTrackPointData (const unsigned short&, const unsigned short&, const gpsdata::ObjectTime&, const std::string&, double) = 0;
+		virtual int newRoute (void) = 0;
+		virtual int newSegment (const int& route) = 0;
+		virtual int newPoint (const int& route, const int& segment) = 0;
+
+		virtual bool finishRoute (const int& route) = 0;
+		virtual bool finishSegment (const int& route, const int& segment) = 0;
+		virtual bool finishPoint (const int& route, const int& segment, const int& point) = 0;
+
+		virtual bool addData (const RouteData& t, const std::string& data) = 0;
+		virtual bool addData (const int& route, const RouteData& t, const std::string& data) = 0;
+		virtual bool addData (const int& route, const int& segment, const RouteData& t, const std::string& data) = 0;
+		virtual bool addData (const int& route, const int& segment, const int& point, const RouteData& t, const std::string& data) = 0;
+
+		virtual bool addSummary (const RouteData& t, const std::string& data) = 0;
+		virtual bool addSummary (const int& route, const RouteData& t, const std::string& data) = 0;
+		virtual bool addSummary (const int& route, const int& segment, const RouteData& t, const std::string& data) = 0;
+		virtual bool addSummary (const int& route, const int& segment, const int& point, const RouteData& t, const std::string& data) = 0;
+
+	private:
+		class PointBase : public internal::Base<PointBase> {
+			ProviderRouteWriterBase* _base;
+			const int _route;
+			const int _segment;
+			const int _point;
+
+		public:
+			PointBase (ProviderRouteWriterBase* base, const int& route, const int& segment, const int& point) : _base(base), _route(route), _segment(segment), _point(point) { }
+
+			bool addDataImpl (const internal::ProviderRouteBase::RouteData& t, const std::string& data) {
+				return this->_base->addData (this->_route, this->_segment, this->_point, t, data);
+			}
+
+			bool addSummaryImpl (const internal::ProviderRouteBase::RouteData& t, const std::string& data) {
+				return this->_base->addSummary (this->_route, this->_segment, this->_point, t, data);
+			}
+
+			bool finishImpl (void) {
+				return this->_base->finishPoint (this->_route, this->_segment, this->_point);
+			}
+		};
+
+		class SegmentBase : public internal::Base<SegmentBase> {
+			ProviderRouteWriterBase* _base;
+			int _route;
+			int _segment;
+
+		public:
+			SegmentBase (ProviderRouteWriterBase* base, const int& route, const int& segment) : _base(base), _route(route), _segment(segment) { }
+
+			bool addDataImpl (const internal::ProviderRouteBase::RouteData& t, const std::string& data) {
+				return this->_base->addData (this->_route, this->_segment, t, data);
+			}
+
+			bool addSummaryImpl (const internal::ProviderRouteBase::RouteData& t, const std::string& data) {
+				return this->_base->addSummary (this->_route, this->_segment, t, data);
+			}
+
+			PointBase addPoint (void) {
+				return PointBase (this->_base, this->_route, this->_segment, this->_base->newPoint (this->_route, this->_segment));
+			}
+
+			bool finishImpl (void) {
+				return this->_base->finishSegment (this->_route, this->_segment);
+			}
+		};
+
+		class RouteBase : public internal::Base<RouteBase> {
+			ProviderRouteWriterBase* _base;
+			int _route;
+
+		public:
+			RouteBase (ProviderRouteWriterBase* base, const int& route) : _base(base), _route(route) { }
+
+			bool addDataImpl (const internal::ProviderRouteBase::RouteData& t, const std::string& data) {
+				return this->_base->addData (this->_route, t, data);
+			}
+
+			bool addSummaryImpl (const internal::ProviderRouteBase::RouteData& t, const std::string& data) {
+				return this->_base->addSummary (this->_route, t, data);
+			}
+
+			SegmentBase addSegment (void) {
+				return SegmentBase (this->_base, this->_route, this->_base->newSegment (this->_route));
+			}
+
+			bool finishImpl (void) {
+				return this->_base->finishRoute (this->_route);
+			}
+		};
+
+	public:
+		RouteBase addRoute (void) {
+			return RouteBase (this, this->newRoute ());
+		}
+
+		bool setData (const std::string&) const override final {
+			throw std::runtime_error ("MethodNotAvalitibleInSpecializedProvider");
+			return false;
+		}
 	};
 }
 

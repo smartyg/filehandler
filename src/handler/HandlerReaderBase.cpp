@@ -6,6 +6,7 @@
 #include <vector>
 #include <ios>
 #include <streambuf>
+#include <fstream>
 #include <string>
 #include <algorithm>
 #include <gpsdata/utils/Logger.hpp>
@@ -45,8 +46,24 @@ bool HandlerReaderBase::release (void) {
 bool HandlerReaderBase::writeFile (const std::string& file) {
 	DEBUG_MSG("HandlerReaderBase::%s (%s)\n", __func__, file.c_str ());
 
-	std::string file_in;
-	if (file.empty ()) file_in = this->getPath ();
-	else file_in = file;
+	std::string file_out;
+	if (file.empty ()) file_out = this->getPath ();
+	else file_out = file;
+
+	std::ofstream output_stream;
+	output_stream.open (file_out);
+	if (!output_stream.is_open()) {
+		throw std::runtime_error ("can not open file: " + file_out);
+	} else {
+		const std::size_t buf_size = 4 * 1024;
+		char buffer[buf_size];
+		std::size_t read_size = -1;
+
+		while (read_size != 0) {
+			read_size = this->streamRead (buffer, buf_size, 0);
+			output_stream.write (buffer, read_size);
+		}
+	}
+
 	return false;
 }

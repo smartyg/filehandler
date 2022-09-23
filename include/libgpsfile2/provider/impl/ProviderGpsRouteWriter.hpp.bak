@@ -8,19 +8,27 @@
 #include <gpsdata.hpp>
 #include <gpsdata/traits/GpsRoute.hpp>
 
+#include <libgpsfile2/provider/impl/ProviderGpsRouteBase.hpp>
 #include <libgpsfile2/provider/ProviderRouteWriterBase.hpp>
 
 namespace libgpsfile2::provider {
 
 	template<gpsdata::GpsRouteTrait R>
-	class ProviderGpsRouteWriter final : public ProviderRouteWriterBase {
+	class ProviderGpsRouteWriter final : public ProviderRouteWriterBase, protected internal::ProviderGpsRouteBase {
 		using GpsFactory = typename R::GpsFactory;
+		using DataType = typename R::DataType;
+		using ActivityType = typename R::ActivityType;
 
 		const std::shared_ptr<GpsFactory> _factory;
 		std::vector<std::shared_ptr<R>> _routes;
 		bool _finished;
+		std::map<uint8_t, DataType> _convertionMap;
 
-		ProviderGpsRouteWriter (const std::shared_ptr<GpsFactory>& factory) : _factory(factory), _finished(false) { }
+		ProviderGpsRouteWriter (const std::shared_ptr<GpsFactory>& factory) : _factory(factory), _finished(false) {
+			for (auto it = ProviderGpsRouteWriter::_type_pais.cbegin (); it != ProviderGpsRouteWriter::_type_pais.cend (); ++it) {
+				this->_convertionMap[ProviderGpsRouteWriter::getType ((*it).first)] = this->_factory->getDataType ((*it).second);
+			}
+		}
 
 		ProviderGpsRouteWriter (void) = delete;
 		ProviderGpsRouteWriter (const ProviderGpsRouteWriter&) = delete;                // copy constructor
@@ -32,6 +40,7 @@ namespace libgpsfile2::provider {
 		~ProviderGpsRouteWriter (void) override {
 			this->_finished = true;
 			this->_routes.clear ();
+			this->_convertionMap.clear ();
 		}
 
 		bool setNumTracks (const unsigned short& num) override {
@@ -63,14 +72,14 @@ namespace libgpsfile2::provider {
 			if (this->_finished) return false;
 			return this->_routes.at (route_num)->setActivityType (type);
 		}
-
+/*
 		bool setTrackOriginalHash (const unsigned short& route_num, const std::string& hash) override {
 			if (this->_finished) return false;
 			(void) route_num;
 			(void) hash;
 			return true;
 		}
-
+*/
 		bool addTrackPoint (const unsigned short& route_num, const unsigned short& segment_num, const gpsdata::ObjectTime& time) override {
 			if (this->_finished) return false;
 			if (this->_routes.at (route_num)->hasPoint (time)) return false;
@@ -110,11 +119,6 @@ namespace libgpsfile2::provider {
 			if (!this->_routes.at (route_num)->hasPoint (time)) this->addTrackPoint (route_num, segment_num, time);
 
 			return this->_routes.at (route_num)->addPointData (segment_num, time, type, value);
-		}
-
-		bool setData (const std::string&) const override {
-			throw std::runtime_error ("MethodNotAvalitibleInSpecializedProvider");
-			return false;
 		}
 
 		void finished (void) override {

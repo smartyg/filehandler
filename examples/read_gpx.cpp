@@ -4,12 +4,9 @@
 #include <string>
 
 #include <gpsdata/utils/Logger.hpp>
+#include <gpsdata/utils/GpsDataFactoryBasic.hpp>
 #include <libgpsfile2.hpp>
-/*
-#include "libgpsfile2/ConstValue.hpp"
-#include "libgpsfile2/provider/ProviderGpsRouteWriter.hpp"
-*/
-#include "gpsdata/utils/GpsDataFactoryBasic.hpp"
+#include <libgpsfile2/provider/impl/ProviderGpsRoute.hpp>
 
 #include "PrintGpsRoute.hpp"
 
