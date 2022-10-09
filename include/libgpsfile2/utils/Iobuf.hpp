@@ -1,11 +1,14 @@
-#ifndef _LIBGPSFILE2__UTILS_IOBUF_
-#define _LIBGPSFILE2__UTILS_IOBUF_
+#ifndef _LIBGPSFILE2_UTILS_IOBUF_
+#define _LIBGPSFILE2_UTILS_IOBUF_
 
-#include <cstring>
-#include <streambuf>
+#include <libgpsfile2/utils/IobufBase.hpp>
 
 namespace libgpsfile2::utils {
-
+	extern template class IobufBase<char>;
+	extern template class IobufBase<uint8_t>;
+	typedef IobufBase<char> Iobuf;
+	typedef IobufBase<uint8_t> IobufInt;
+#if 0
 	template<typename _CharT, typename _Traits = std::char_traits<_CharT>, typename _Alloc = std::allocator<_CharT> >
 	class basic_iobuf : public std::basic_streambuf<_CharT, _Traits> {
 	private:
@@ -208,6 +211,7 @@ namespace libgpsfile2::utils {
 	};
 
 	typedef basic_iobuf<char> Iobuf;
+#endif
 }
 
-#endif /* _LIBGPSFILE2__UTILS_IOBUF_ */
+#endif /* _LIBGPSFILE2_UTILS_IOBUF_ */
