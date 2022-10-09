@@ -132,6 +132,16 @@ AC_ARG_ENABLE([gtest],
 	esac],
 	[gtest=false])
 
+# coverage flag
+AC_ARG_ENABLE([coverage],
+	[AS_HELP_STRING([--enable-coverage], [Enable coverage report generation for code testing @<:@default=disabled@:>@])],
+	[case "${enableval}" in
+		yes) coverage=true ;;
+		no)  coverage=false ;;
+		*) AC_MSG_ERROR([bad value ${enableval} for --enable-coverage]) ;;
+	esac],
+	[coverage=false])
+
 # Check for GNU C++17 standard
 AX_CXX_COMPILE_STDCXX(11, ext, mandatory)
 AX_CXX_COMPILE_STDCXX(14, ext, mandatory)
@@ -171,6 +181,14 @@ AX_CHECK_LIB([dl], [dlopen], [DL])
 if test "x$gtest" == xtrue; then
 	PKG_CHECK_MODULES([GTEST], [gtest_main])
 	PKG_CHECK_MODULES([GMOCK], [gmock_main])
+
+	if test "x$coverage" == xtrue; then
+		# Checks for existence of coverage tools and define variables for reporting coverage
+		AX_COVERAGE
+	fi
+else
+	# Without tests, coverage has no use.
+	coverage=false
 fi
 
 # Compute the major version of the library which is the last part of the library SONAME.
@@ -212,5 +230,7 @@ AM_CONDITIONAL([HAVE_GIT], [test -n "$GIT"])
 AM_CONDITIONAL([GTEST], [test x$gtest = xtrue])
 AM_CONDITIONAL([GMOCK], [test x$gtest = xtrue])
 
-AC_CONFIG_FILES([Makefile libgpsfile2.pc])
+AM_CONDITIONAL([COVERAGE], [test x$coverage = xtrue])
+
+AC_CONFIG_FILES([Makefile libgpsfile2.pc libgpsfile2-providergpsroute.pc])
 AC_OUTPUT
