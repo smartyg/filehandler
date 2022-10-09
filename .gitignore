@@ -109,3 +109,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# code coverage
+*.gcda
+*.gcno
