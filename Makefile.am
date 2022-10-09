@@ -216,7 +216,7 @@ ChangeLog:
 	-$(GIT) log --decorate > ChangeLog
 
 VERSION:
-	-$(GIT) describe --tags --match=v[0-9]* --long --dirty | $(SED) 's/^v//' > VERSION
+	-$(GIT) describe --tags --match=[0-9]* --long --dirty | $(SED) 's/^v//' > VERSION
 
 distclean-local:
 	@rm -f ChangeLog VERSION
