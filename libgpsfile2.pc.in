@@ -8,5 +8,5 @@ Description: @PROGRAM_SUMMARY@
 Version: @PACKAGE_VERSION@
 URL: @PACKAGE_HOMEPAGE@
 Libs: -L${libdir} -l@PROGRAM_NAME@
-Requires: gpsdata >= 0.0.2 gpsdata-utils >= 0.0.2
+Requires: gpsdata >= 0.0.2 libgpsdata-utils >= 0.0.2
 Cflags: -I${includedir}

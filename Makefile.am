@@ -85,25 +85,37 @@ noinst_HEADERS = src/handler/HandlerPlainReader.hpp \
 ## filename, in order to avoid the need to define separate file lists for each
 ## installation directory.  This only works if the directory hierarchy in the
 ## source tree matches the hierarchy at the install location, however.
-libgpsfile2_la_includedir = $(includedir)
-nobase_libgpsfile2_la_include_HEADERS = include/libgpsfile2.hpp \
-	include/libgpsfile2/GpsfilePlugin.hpp \
-	include/libgpsfile2/handler/HandlerBase.hpp \
+libgpsfile2_includedir = $(includedir)
+libgpsfile2_include_HEADERS = include/libgpsfile2.hpp
+
+libgpsfile2_sub_includedir = $(includedir)/libgpsfile2
+libgpsfile2_sub_include_HEADERS = include/libgpsfile2/GpsfilePlugin.hpp \
+	include/libgpsfile2/PluginHandler.hpp
+
+libgpsfile2_sub_handler_includedir = $(includedir)/libgpsfile2/handler
+libgpsfile2_sub_handler_include_HEADERS = include/libgpsfile2/handler/HandlerBase.hpp \
 	include/libgpsfile2/handler/HandlerReaderBase.hpp \
-	include/libgpsfile2/handler/HandlerWriterBase.hpp \
-	include/libgpsfile2/PluginHandler.hpp \
-	include/libgpsfile2/utils/Iobuf.hpp \
+	include/libgpsfile2/handler/HandlerWriterBase.hpp
+
+libgpsfile2_sub_utils_includedir = $(includedir)/libgpsfile2/utils
+libgpsfile2_sub_utils_include_HEADERS = include/libgpsfile2/utils/Iobuf.hpp \
 	include/libgpsfile2/utils/IobufBase.hpp \
-	include/libgpsfile2/utils/dynamic_unique_ptr_cast.hpp \
-	include/libgpsfile2/types/HandlerType.hpp \
+	include/libgpsfile2/utils/dynamic_unique_ptr_cast.hpp
+
+libgpsfile2_sub_types_includedir = $(includedir)/libgpsfile2/types
+libgpsfile2_sub_types_include_HEADERS = include/libgpsfile2/types/HandlerType.hpp \
 	include/libgpsfile2/types/PluginDetails.hpp \
-	include/libgpsfile2/types/BasePlugin.hpp \
-	include/libgpsfile2/traits/common.hpp \
+	include/libgpsfile2/types/BasePlugin.hpp
+
+libgpsfile2_sub_traits_includedir = $(includedir)/libgpsfile2/traits
+libgpsfile2_sub_traits_include_HEADERS = include/libgpsfile2/traits/common.hpp \
 	include/libgpsfile2/traits/HandlerReaderTrait.hpp \
 	include/libgpsfile2/traits/HandlerWriterTrait.hpp \
 	include/libgpsfile2/traits/ProviderReaderTrait.hpp \
-	include/libgpsfile2/traits/ProviderWriterTrait.hpp \
-	include/libgpsfile2/provider/ProviderBase.hpp \
+	include/libgpsfile2/traits/ProviderWriterTrait.hpp
+
+libgpsfile2_sub_provider_includedir = $(includedir)/libgpsfile2/provider
+libgpsfile2_sub_provider_include_HEADERS = include/libgpsfile2/provider/ProviderBase.hpp \
 	include/libgpsfile2/provider/ProviderReaderBase.hpp \
 	include/libgpsfile2/provider/ProviderWriterBase.hpp \
 	include/libgpsfile2/provider/ProviderRouteBase.hpp \
@@ -133,11 +145,12 @@ libgpsfile2_providergpsroute_la_LDFLAGS = -version-info @LIBRARY_CURRENT_VERSION
 ## filename, in order to avoid the need to define separate file lists for each
 ## installation directory.  This only works if the directory hierarchy in the
 ## source tree matches the hierarchy at the install location, however.
-libgpsfile2_providergpsroute_la_includedir = $(includedir)
-nobase_libgpsfile2_providergpsroute_la_include_HEADERS = include/libgpsfile2/provider/impl/ProviderGpsRoute.hpp \
+libgpsfile2_sub_provider_impl_includedir = $(includedir)/libgpsfile2/provider/impl
+libgpsfile2_sub_provider_impl_include_HEADERS = include/libgpsfile2/provider/impl/ProviderGpsRoute.hpp \
 	include/libgpsfile2/provider/impl/ProviderGpsRouteBase.hpp \
 	include/libgpsfile2/provider/impl/ProviderGpsRouteReader.hpp \
-	include/libgpsfile2/provider/impl/ProviderGpsRouteWriter.hpp
+	include/libgpsfile2/provider/impl/ProviderGpsRouteWriter.hpp \
+	include/libgpsfile2/provider/impl/ProviderGpsRouteUtils.hpp
 
 
 # pkglib_LTLIBRARIES = gps.la

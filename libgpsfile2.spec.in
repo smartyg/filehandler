@@ -41,18 +41,19 @@ BuildRoot:      %{_tmppath}/%{name}-%{srcVersion}-build
 %package devel
 Summary:        Development files for libgchart
 Group:          Development/Sources
-Requires:       %{libName}%{majorVersion} = %{version}
+Requires:       %{libName}-%{majorVersion} = %{version}
 Requires:       %{libName}-providergpsroute%{majorVersion} = %{version}
+Requires:       %{libName}-plugin-gpx = %{version}
 
 %description devel
 Development files for @PACKAGE_NAME@.
 @PROGRAM_DESCRIPTION@
 
-%package -n %{libName}%{majorVersion}
+%package -n %{libName}-%{majorVersion}
 Summary:        @PROGRAM_SUMMARY@
 Group:          System/Libraries
 
-%description -n %{libName}%{majorVersion}
+%description -n %{libName}-%{majorVersion}
 @PROGRAM_DESCRIPTION@
 
 %package -n %{libName}-providergpsroute%{majorVersion}
@@ -60,6 +61,14 @@ Summary:        @PROGRAM_SUMMARY@
 Group:          System/Libraries
 
 %description -n %{libName}-providergpsroute%{majorVersion}
+@PROGRAM_DESCRIPTION@
+
+%package -n %{libName}-plugin-gpx
+Summary:        Plugin to handle reading and writing of gpx file
+Group:          System/Libraries
+Requires:       %{libName}-%{majorVersion} = %{version}
+
+%description -n %{libName}-plugin-gpx
 @PROGRAM_DESCRIPTION@
 
 
@@ -78,13 +87,13 @@ make %{?_smp_mflags}
 make check %{?_smp_mflags}
 make clean
 
-%post -n %{libName}%{majorVersion}
+%post -n %{libName}-%{majorVersion}
 /sbin/ldconfig
 
 %post -n %{libName}-providergpsroute%{majorVersion}
 /sbin/ldconfig
 
-%postun -n %{libName}%{majorVersion}
+%postun -n %{libName}-%{majorVersion}
 /sbin/ldconfig
 
 %postun -n %{libName}-providergpsroute%{majorVersion}
@@ -102,15 +111,22 @@ make clean
 %_libdir/%{libName}-providergpsroute.so
 %{_libdir}/pkgconfig/%{libName}.pc
 %{_libdir}/pkgconfig/%{libName}-providergpsroute.pc
+%{_libdir}/%{libName}/gpx.la
 
-%files -n %{libName}%{majorVersion}
+%files -n %{libName}-%{majorVersion}
 %defattr(-,root,root)
 %license LICENSE
 %{_libdir}/%{libName}.so.*
+%dir %{_libdir}/%{libName}
 
 %files -n %{libName}-providergpsroute%{majorVersion}
 %defattr(-,root,root)
 %license LICENSE
 %{_libdir}/%{libName}-providergpsroute.so.*
+
+%files -n %{libName}-plugin-gpx
+%defattr(-,root,root)
+%license LICENSE
+%{_libdir}/%{libName}/gpx.so
 
 %changelog
