@@ -23,11 +23,12 @@ using GpsRouteType = gpsdata::GpsRoute<GpsFactoryType, GpsSegmentType>;
 int main (void) {
 	std::cout << "create plugin\n";
 	// load gpsfile plugin
-	auto plugin = GpsfilePlugin::create ({std::string(PKGLIBDIR)});
+	const auto plugin = GpsfilePlugin::getPtr ();
+	pluginmanager::Manager.getInstance ().addManager (plugin);
 
 	std::cout << "create factory\n";
 	// create factory for gps data
-	auto factory = GpsFactoryType::create ();
+	const auto factory = GpsFactoryType::create ();
 
 	std::cout << "create provider\n";
 	// create provider
@@ -35,7 +36,7 @@ int main (void) {
 
 	std::cout << "register type\n";
 	libgpsfile2::HandlerType route_writer;
-	GpsfilePlugin::registerWriterType<ProviderRouteWriterBase> (route_writer);
+	this->registerWriterType<ProviderRouteWriterBase> (route_writer);
 	//std::cout << "register type\n";
 
 	std::cout << "create handler\n";
