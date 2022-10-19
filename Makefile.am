@@ -54,7 +54,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgpsfile2.pc libgpsfile2-providergpsroute.pc
 
 lib_LTLIBRARIES = libgpsfile2.la
-libgpsfile2_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
+libgpsfile2_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@ @PLUGINMANAGER_CFLAGS@
 
 ## Define the source file list for the "libexample-@EXAMPLE_API_VERSION@.la"
 ## target.  Note that @EXAMPLE_API_VERSION@ is not interpreted by Automake and
@@ -62,7 +62,7 @@ libgpsfile2_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$
 ## and the variable name derived from that.
 ## Note that it is not necessary to list header files
 ## which are already listed elsewhere in a _HEADERS variable assignment.
-libgpsfile2_la_SOURCES = src/GpsfilePlugin.cpp \
+libgpsfile2_la_SOURCES = src/GpsfileManager.cpp \
 	src/handler/HandlerBase.cpp \
 	src/handler/HandlerPlainReader.cpp \
 	src/handler/HandlerPlainWriter.cpp \
@@ -70,7 +70,7 @@ libgpsfile2_la_SOURCES = src/GpsfilePlugin.cpp \
 	src/handler/HandlerWriterBase.cpp \
 	src/utils/Iobuf.cpp
 
-libgpsfile2_la_LIBADD = @DL_LIBS@ @GPSDATA_UTILS_LIBS@
+libgpsfile2_la_LIBADD = @GPSDATA_UTILS_LIBS@ @PLUGINMANAGER_LIBS@
 
 ## Instruct libtool to include ABI version information in the generated shared
 ## library file (.so).  The library ABI version is defined in configure.ac, so
@@ -89,8 +89,9 @@ libgpsfile2_includedir = $(includedir)
 libgpsfile2_include_HEADERS = include/libgpsfile2.hpp
 
 libgpsfile2_sub_includedir = $(includedir)/libgpsfile2
-libgpsfile2_sub_include_HEADERS = include/libgpsfile2/GpsfilePlugin.hpp \
-	include/libgpsfile2/PluginHandler.hpp
+libgpsfile2_sub_include_HEADERS = include/libgpsfile2/GpsfileManager.hpp \
+	include/libgpsfile2/PluginHandler.hpp \
+	include/libgpsfile2/PluginHelper.hpp
 
 libgpsfile2_sub_handler_includedir = $(includedir)/libgpsfile2/handler
 libgpsfile2_sub_handler_include_HEADERS = include/libgpsfile2/handler/HandlerBase.hpp \
@@ -168,7 +169,7 @@ libgpsfile2_sub_provider_impl_include_HEADERS = include/libgpsfile2/provider/imp
 pkglib_LTLIBRARIES = gpx.la
 gpx_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" @GPX_CFLAGS@ @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 gpx_la_LDFLAGS = -module -avoid-version -shared
-gpx_la_LIBADD = libgpsfile2.la @GPX_LIBS@
+gpx_la_LIBADD = @GPX_LIBS@
 gpx_la_SOURCES = plugins/gpx/plugin.cpp \
 	plugins/gpx/gpxplugin.cpp \
 	plugins/gpx/gpxreader.cpp \

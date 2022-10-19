@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.69])
 AC_INIT([libgpsfile2], [0.0.0], [goedhart.martijn@gmail.com])
-AC_CONFIG_SRCDIR([src/GpsfilePlugin.cpp])
+AC_CONFIG_SRCDIR([src/GpsfileManager.cpp])
 AC_CONFIG_HEADERS([config.h])
 AH_BOTTOM([#include <features.h>])
 
@@ -171,12 +171,12 @@ AC_CHECK_FUNCS([memset setlocale strcpy])
 AC_CHECK_PROGS([GIT], [git])
 
 # Checks for packages.
+PKG_CHECK_MODULES([PLUGINMANAGER], [libcpluginmanager])
 PKG_CHECK_MODULES([GPSDATA], [gpsdata])
 PKG_CHECK_MODULES([GPSDATA_UTILS], [libgpsdata-utils])
 PKG_CHECK_MODULES([GPX], [gpxlib])
 
 # Checks for libraries.
-AX_CHECK_LIB([dl], [dlopen], [DL])
 
 if test "x$gtest" == xtrue; then
 	PKG_CHECK_MODULES([GTEST], [gtest_main])

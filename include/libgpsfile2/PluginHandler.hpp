@@ -24,20 +24,23 @@ namespace libgpsfile2 {
 	using writer_creator = std::function<std::unique_ptr<handler::HandlerWriterBase>(const std::size_t&, std::unique_ptr<provider::ProviderWriterBase>, const std::string&)>;
 
 	template<class T>
-	using ReaderFunc = std::unique_ptr<handler::HandlerReaderBase> (*) (const std::shared_ptr<BasePlugin>, std::unique_ptr<T>, const std::string&);
+	//using ReaderFunc = std::unique_ptr<handler::HandlerReaderBase> (*) (const std::shared_ptr<BasePlugin>, std::unique_ptr<T>, const std::string&);
+	using ReaderFunc = std::function<std::unique_ptr<handler::HandlerReaderBase>(std::unique_ptr<T>, const std::string&)>;
 
 	template<class T>
-	using WriterFunc = std::unique_ptr<handler::HandlerWriterBase> (*) (const std::shared_ptr<BasePlugin>, std::unique_ptr<T>, const std::string&);
+	//using WriterFunc = std::unique_ptr<handler::HandlerWriterBase> (*) (const std::shared_ptr<BasePlugin>, std::unique_ptr<T>, const std::string&);
+	using WriterFunc = std::function<std::unique_ptr<handler::HandlerWriterBase>(std::unique_ptr<T>, const std::string&)>;
 
 	class PluginHandler {
-		friend class GpsfilePlugin;
+		friend class GpsfileManager;
 
-		const std::shared_ptr<BasePlugin> _instance;
+		//const std::shared_ptr<BasePlugin> _instance;
 		std::map<int, reader_creator> _reader_creators;
 		std::map<int, writer_creator> _writer_creators;
 
 	public:
-		PluginHandler (const std::shared_ptr<BasePlugin> instance) noexcept : _instance(instance) { }
+		//PluginHandler (const std::shared_ptr<BasePlugin> instance) noexcept : _instance(instance) { }
+		PluginHandler (void) noexcept { }
 		~PluginHandler (void) {
 			//this->_instance.reset ();
 			this->_reader_creators.clear ();
@@ -48,13 +51,13 @@ namespace libgpsfile2 {
 		void addReader (const HandlerType& dht, ReaderFunc<T> func) {
 			assert (dht);
 			if (!dht) throw std::runtime_error ("no type given");
-			reader_creator init_func = [base = this->_instance, func] (const std::size_t& type_hash, std::unique_ptr<provider::ProviderReaderBase> provider, const std::string& path) -> std::unique_ptr<handler::HandlerReaderBase> {
+			reader_creator init_func = [func] (const std::size_t& type_hash, std::unique_ptr<provider::ProviderReaderBase> provider, const std::string& path) -> std::unique_ptr<handler::HandlerReaderBase> {
 				assert (typeid (T).hash_code () == type_hash);
 				// Convert `provider` to type T
 				std::unique_ptr<T> dp_downcasted = dynamic_unique_ptr_cast<T> (std::move (provider));
 				if (!dp_downcasted) throw std::runtime_error ("can not cast");
 
-				return func (base, std::move (dp_downcasted), path);
+				return func (std::move (dp_downcasted), path);
 			};
 
 			this->_reader_creators[static_cast<int>(dht)] = init_func;
@@ -64,13 +67,13 @@ namespace libgpsfile2 {
 		void addWriter (const HandlerType& dht, WriterFunc<T> func) {
 			assert (dht);
 			if (!dht) throw std::runtime_error ("no type given");
-			writer_creator init_func = [base = this->_instance, func] (const std::size_t& type_hash, std::unique_ptr<provider::ProviderWriterBase> provider, const std::string& path) -> std::unique_ptr<handler::HandlerWriterBase> {
+			writer_creator init_func = [func] (const std::size_t& type_hash, std::unique_ptr<provider::ProviderWriterBase> provider, const std::string& path) -> std::unique_ptr<handler::HandlerWriterBase> {
 				assert (typeid (T).hash_code () == type_hash);
 				// Convert `provider` to type T
 				std::unique_ptr<T> dp_downcasted = dynamic_unique_ptr_cast<T> (std::move (provider));
 				if (!dp_downcasted) throw std::runtime_error ("can not cast");
 
-				return func (base, std::move (dp_downcasted), path);
+				return func (std::move (dp_downcasted), path);
 			};
 
 			this->_writer_creators[static_cast<int>(dht)] = init_func;
