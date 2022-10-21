@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <string>
-
+#include <PluginManager.hpp>
 #include <gpsdata/utils/Logger.hpp>
 #include <gpsdata/utils/GpsDataFactoryBasic.hpp>
 #include <libgpsfile2.hpp>
@@ -10,7 +10,7 @@
 
 #include "PrintGpsRoute.hpp"
 
-using libgpsfile2::GpsfilePlugin;
+using libgpsfile2::GpsfileManager;
 using libgpsfile2::handler::HandlerReaderBase;
 using libgpsfile2::handler::HandlerWriterBase;
 using libgpsfile2::provider::ProviderGpsRouteReader;
@@ -26,8 +26,8 @@ using GpsRouteType = gpsdata::GpsRoute<GpsFactoryType, GpsSegmentType>;
 int main (void) {
 	std::cout << "create plugin\n";
 	// load gpsfile plugin
-	const auto plugin = GpsfilePlugin::getPtr ();
-	pluginmanager::Manager.getInstance ().addManager (plugin);
+	const auto plugin = GpsfileManager::getPtr ();
+	pluginmanager::Manager::getInstance ().addManager (plugin);
 
 	std::cout << "create factory\n";
 	// create factory for gps data
@@ -37,15 +37,10 @@ int main (void) {
 	// create provider
 	auto provider_writer = ProviderGpsRouteWriter<GpsRouteType>::create (factory);
 
-	std::cout << "register writer type\n";
-	libgpsfile2::HandlerType route_writer;
-	plugin->registerWriterType<ProviderRouteWriterBase> (route_writer);
-	//std::cout << "register type\n";
-
 	std::cout << "create writer handler\n";
 	// get handler
 	std::string path_writer = "/tmp/test.gpx";
-	std::unique_ptr<HandlerWriterBase> handler_writer = plugin->createWriter (std::move (provider_writer), route_writer, path_writer, path_writer.substr (path_writer.size () - 4, 4));
+	std::unique_ptr<HandlerWriterBase> handler_writer = plugin->createWriter<ProviderRouteWriterBase> (std::move (provider_writer), path_writer, path_writer.substr (path_writer.size () - 4, 4));
 
 	if (!handler_writer) throw std::runtime_error ("data handler is empty");
 
@@ -65,15 +60,10 @@ int main (void) {
 	// create provider
 	auto provider_reader = ProviderGpsRouteReader<GpsRouteType>::create (routes);
 
-	std::cout << "register reader type\n";
-	libgpsfile2::HandlerType route_reader;
-	plugin->registerReaderType<ProviderRouteReaderBase> (route_reader);
-	//std::cout << "register type\n";
-
 	std::cout << "create reader handler\n";
 	// get handler
 	std::string path_reader = "/tmp/test-out.gpx";
-	std::unique_ptr<HandlerReaderBase> handler_reader = plugin->createReader (std::move (provider_reader), route_reader, path_reader, path_reader.substr (path_reader.size () - 4, 4));
+	std::unique_ptr<HandlerReaderBase> handler_reader = plugin->createReader<ProviderRouteReaderBase> (std::move (provider_reader), path_reader, path_reader.substr (path_reader.size () - 4, 4));
 
 	if (!handler_reader) throw std::runtime_error ("data handler is empty");
 

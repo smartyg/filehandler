@@ -2,7 +2,7 @@
 
 #include <memory>
 #include <string>
-
+#include <PluginManager.hpp>
 #include <gpsdata/utils/Logger.hpp>
 #include <gpsdata/utils/GpsDataFactoryBasic.hpp>
 #include <libgpsfile2.hpp>
@@ -10,7 +10,7 @@
 
 #include "PrintGpsRoute.hpp"
 
-using libgpsfile2::GpsfilePlugin;
+using libgpsfile2::GpsfileManager;
 using libgpsfile2::handler::HandlerWriterBase;
 using libgpsfile2::provider::ProviderGpsRouteWriter;
 using libgpsfile2::provider::ProviderRouteWriterBase;
@@ -23,8 +23,8 @@ using GpsRouteType = gpsdata::GpsRoute<GpsFactoryType, GpsSegmentType>;
 int main (void) {
 	std::cout << "create plugin\n";
 	// load gpsfile plugin
-	const auto plugin = GpsfilePlugin::getPtr ();
-	pluginmanager::Manager.getInstance ().addManager (plugin);
+	const auto plugin = GpsfileManager::getPtr ();
+	pluginmanager::Manager::getInstance ().addManager (plugin);
 
 	std::cout << "create factory\n";
 	// create factory for gps data
@@ -34,15 +34,15 @@ int main (void) {
 	// create provider
 	auto provider = ProviderGpsRouteWriter<GpsRouteType>::create (factory);
 
-	std::cout << "register type\n";
-	libgpsfile2::HandlerType route_writer;
-	this->registerWriterType<ProviderRouteWriterBase> (route_writer);
+	//std::cout << "register type\n";
+	//libgpsfile2::HandlerType route_writer;
+	//this->registerWriterType<ProviderRouteWriterBase> (route_writer);
 	//std::cout << "register type\n";
 
 	std::cout << "create handler\n";
 	// get handler
 	std::string path = "/tmp/test.gpx";
-	std::unique_ptr<HandlerWriterBase> handler = plugin->createWriter (std::move (provider), route_writer, path, path.substr (path.size () - 4, 4));
+	std::unique_ptr<HandlerWriterBase> handler = plugin->createWriter<ProviderRouteWriterBase> (std::move (provider), path, path.substr (path.size () - 3, 3));
 
 	if (!handler) throw std::runtime_error ("data handler is empty");
 

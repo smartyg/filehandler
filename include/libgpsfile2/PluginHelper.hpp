@@ -9,23 +9,25 @@
 #include <utility>
 #include <cpluginmanager/types/PluginDetails.h>
 
-#include "GpsfileManager.hpp"
-#include "libgpsfile2/types/PluginDetails.hpp"
-#include "libgpsfile2/types/Creator.hpp"
-#include "libgpsfile2/PluginHandler.hpp"
-#include "libgpsfile2/handler/HandlerReaderBase.hpp"
-#include "libgpsfile2/handler/HandlerWriterBase.hpp"
+#include <libgpsfile2/GpsfileManager.hpp>
+#include <libgpsfile2/types/PluginDetails.hpp>
+#include <libgpsfile2/types/HandlerCreatorFunc.hpp>
+#include <libgpsfile2/types/PluginCreatorFunc.hpp>
+#include <libgpsfile2/traits/ProviderReaderTrait.hpp>
+#include <libgpsfile2/traits/ProviderWriterTrait.hpp>
+#include <libgpsfile2/traits/HandlerReaderTrait.hpp>
+#include <libgpsfile2/traits/HandlerWriterTrait.hpp>
+#include <libgpsfile2/utils/dynamic_unique_ptr_cast.hpp>
 
 namespace libgpsfile2 {
 	class PluginHelper final {
-		//using creator = std::function<void(const std::shared_ptr<GpsfileManager>&, const std::shared_ptr<PluginHandler>&)>;
 		const char* _file_type;
 		const char* _name;
 		const char* _author;
 		const char* _license;
-		uint8_t _major_version;
-		uint8_t _minor_version;
-		std::vector<Creator> _handlers;
+		const uint8_t _major_version;
+		const uint8_t _minor_version;
+		std::vector<PluginCreatorFunc> _handlers;
 		std::weak_ptr<PluginHelper> _self;
 
 		PluginHelper (void)                               = delete;
@@ -41,32 +43,23 @@ namespace libgpsfile2 {
 	public:
 		~PluginHelper (void) = default;
 
-		static const std::shared_ptr<PluginHelper> constructPlugin (const char* file_type, const char* name, const char* author, const char* license, const uint8_t& major_version, const uint8_t& minor_version) {
-			auto helper = std::shared_ptr<PluginHelper>(new PluginHelper (file_type, name, author, license, major_version, minor_version));
+		[[nodiscard]] static const std::shared_ptr<PluginHelper> constructPlugin (const char* file_type, const char* name, const char* author, const char* license, const uint8_t& major_version, const uint8_t& minor_version) {
+			const std::shared_ptr<PluginHelper> helper = std::shared_ptr<PluginHelper>(new PluginHelper (file_type, name, author, license, major_version, minor_version));
 			helper->_self = helper;
-/*
-			helper._file_type = file_type;
-			helper._name = name;
-			helper._author = author;
-			helper._license = license;
-			helper._major_version = major_version;
-			helper._minor_version = minor_version;
-*/
+
 			return helper;
 		}
 
-		template <class Provider, class Reader>
-		const std::shared_ptr<PluginHelper> addReader (void) {
-			Creator func = [] (const std::shared_ptr<GpsfileManager>& manager, const std::shared_ptr<PluginHandler>& handler) -> void {
-				HandlerType reader_type;
-				manager->registerReaderType<Provider> (reader_type);
-
-				std::function<std::unique_ptr<handler::HandlerReaderBase>(std::unique_ptr<provider::ProviderReaderBase>, const std::string&)> f1 = [] (std::unique_ptr<Provider> dp, const std::string& path) -> std::unique_ptr<handler::HandlerReaderBase> {
-					std::unique_ptr<handler::HandlerReaderBase> reader = std::make_unique<Reader>(std::move (dp), path);
+		template <provider::ProviderReaderAbstractTrait Provider, handler::HandlerReaderFinalTrait Reader>
+		[[nodiscard]] const std::shared_ptr<PluginHelper> addReader (void) {
+			PluginCreatorFunc func = [extension = this->_file_type] (const std::shared_ptr<GpsfileManager>& manager) -> void {
+				HandlerCreatorFunc f1 = [] (std::unique_ptr<provider::ProviderBase> provider_base, const std::string& path) -> std::unique_ptr<handler::HandlerBase> {
+					std::unique_ptr<Provider> provider = utils::dynamic_unique_ptr_cast<Provider>(std::move (provider_base));
+					std::unique_ptr<handler::HandlerBase> reader = std::make_unique<Reader>(std::move (provider), path);
 					return reader;
 				};
 
-				handler->addReader (reader_type, f1);
+				manager->addPlugin (extension, GpsfileManager::getProviderType<Provider>(), f1);
 			};
 
 			this->_handlers.push_back (func);
@@ -74,18 +67,16 @@ namespace libgpsfile2 {
 			return this->_self.lock ();
 		}
 
-		template <class Provider, class Writer>
-		const std::shared_ptr<PluginHelper> addWriter (void) {
-			Creator func = [] (const std::shared_ptr<GpsfileManager>& manager, const std::shared_ptr<PluginHandler>& handler) -> void {
-				HandlerType writer_type;
-				manager->registerWriterType<Provider> (writer_type);
-
-				std::function<std::unique_ptr<handler::HandlerWriterBase>(std::unique_ptr<Provider>, const std::string&)> f1 = [] (std::unique_ptr<Provider> dp, const std::string& path) -> std::unique_ptr<handler::HandlerWriterBase> {
-					std::unique_ptr<handler::HandlerWriterBase> writer = std::make_unique<Writer>(std::move (dp), path);
+		template <provider::ProviderWriterAbstractTrait Provider, handler::HandlerWriterFinalTrait Writer>
+		[[nodiscard]] const std::shared_ptr<PluginHelper> addWriter (void) {
+			PluginCreatorFunc func = [extension = this->_file_type] (const std::shared_ptr<GpsfileManager>& manager) -> void {
+				HandlerCreatorFunc f1 = [] (std::unique_ptr<provider::ProviderBase> provider_base, const std::string& path) -> std::unique_ptr<handler::HandlerBase> {
+					std::unique_ptr<Provider> provider = utils::dynamic_unique_ptr_cast<Provider>(std::move (provider_base));
+					std::unique_ptr<handler::HandlerBase> writer = std::make_unique<Writer>(std::move (provider), path);
 					return writer;
 				};
 
-				handler->addWriter (writer_type, f1);
+				manager->addPlugin (extension, GpsfileManager::getProviderType<Provider>(), f1);
 			};
 
 			this->_handlers.push_back (func);
@@ -93,18 +84,16 @@ namespace libgpsfile2 {
 			return this->_self.lock ();
 		}
 
-		template <class Provider, class Reader, class Base>
-		const std::shared_ptr<PluginHelper> addReader (std::shared_ptr<Base> base) {
-			Creator func = [base] (const std::shared_ptr<GpsfileManager>& manager, const std::shared_ptr<PluginHandler>& handler) -> void {
-				HandlerType reader_type;
-				manager->registerReaderType<Provider> (reader_type);
-
-				std::function<std::unique_ptr<handler::HandlerReaderBase>(std::unique_ptr<Provider>, const std::string&)> f1 = [base] (std::unique_ptr<Provider> dp, const std::string& path) -> std::unique_ptr<handler::HandlerReaderBase> {
-					std::unique_ptr<handler::HandlerReaderBase> reader = std::make_unique<Reader>(base, std::move (dp), path);
+		template <provider::ProviderReaderAbstractTrait Provider, handler::HandlerReaderFinalTrait Reader, class Base>
+		[[nodiscard]] const std::shared_ptr<PluginHelper> addReader (std::shared_ptr<Base> base) {
+			PluginCreatorFunc func = [base, extension = this->_file_type] (const std::shared_ptr<GpsfileManager>& manager) -> void {
+				HandlerCreatorFunc f1 = [base] (std::unique_ptr<provider::ProviderBase> provider_base, const std::string& path) -> std::unique_ptr<handler::HandlerBase> {
+					std::unique_ptr<Provider> provider = utils::dynamic_unique_ptr_cast<Provider>(std::move (provider_base));
+					std::unique_ptr<handler::HandlerBase> reader = std::make_unique<Reader>(base, std::move (provider), path);
 					return reader;
 				};
 
-				handler->addReader (reader_type, f1);
+				manager->addPlugin (extension, GpsfileManager::getProviderType<Provider>(), f1);
 			};
 
 			this->_handlers.push_back (func);
@@ -112,18 +101,16 @@ namespace libgpsfile2 {
 			return this->_self.lock ();
 		}
 
-		template <class Provider, class Writer, class Base>
-		const std::shared_ptr<PluginHelper> addWriter (std::shared_ptr<Base> base) {
-			Creator func = [base] (const std::shared_ptr<GpsfileManager>& manager, const std::shared_ptr<PluginHandler>& handler) -> void {
-				HandlerType writer_type;
-				manager->registerWriterType<Provider> (writer_type);
-
-				std::function<std::unique_ptr<handler::HandlerWriterBase>(std::unique_ptr<Provider>, const std::string&)> f1 = [base] (std::unique_ptr<Provider> dp, const std::string& path) -> std::unique_ptr<handler::HandlerWriterBase> {
-					std::unique_ptr<handler::HandlerWriterBase> writer = std::make_unique<Writer>(base, std::move (dp), path);
+		template <provider::ProviderWriterAbstractTrait Provider, handler::HandlerWriterFinalTrait Writer, class Base>
+		[[nodiscard]] const std::shared_ptr<PluginHelper> addWriter (const std::shared_ptr<Base> base) {
+			PluginCreatorFunc func = [base, extension = this->_file_type] (const std::shared_ptr<GpsfileManager>& manager) -> void {
+				HandlerCreatorFunc f1 = [base] (std::unique_ptr<provider::ProviderBase> provider_base, const std::string& path) -> std::unique_ptr<handler::HandlerBase> {
+					std::unique_ptr<Provider> provider = utils::dynamic_unique_ptr_cast<Provider>(std::move (provider_base));
+					std::unique_ptr<handler::HandlerBase> writer = std::make_unique<Writer>(base, std::move (provider), path);
 					return writer;
 				};
 
-				handler->addWriter (writer_type, f1);
+				manager->addPlugin (extension, GpsfileManager::getProviderType<Provider>(), f1);
 			};
 
 			this->_handlers.push_back (func);
@@ -131,7 +118,7 @@ namespace libgpsfile2 {
 			return this->_self.lock ();
 		}
 
-		void construct (::PluginDetails& details) {
+		void construct (::PluginDetails& details) const {
 			details.id = this->_file_type;
 			details.name = this->_name;
 			details.author = this->_author;

@@ -10,203 +10,70 @@
 #include <stdexcept>
 #include <gpsdata/utils/Logger.hpp>
 
-#include <libgpsfile2/PluginHandler.hpp>
-#include <libgpsfile2/types/HandlerType.hpp>
-#include <libgpsfile2/types/PluginDetails.hpp>
-#include <libgpsfile2/handler/HandlerReaderBase.hpp>
-#include <libgpsfile2/handler/HandlerWriterBase.hpp>
-#include <libgpsfile2/provider/ProviderReaderBase.hpp>
-#include <libgpsfile2/provider/ProviderWriterBase.hpp>
-
 #include "./handler/HandlerPlainReader.hpp"
 #include "./handler/HandlerPlainWriter.hpp"
 
-#ifndef IS_SET
-#define IS_SET(v, m) (((v) & (m)) == (m))
-#endif
-
-#define PLUGIN_TYPE_DATA_FILE_NONE (0)
-
-
 using libgpsfile2::GpsfileManager;
-using libgpsfile2::HandlerType;
-using libgpsfile2::PluginDetails;
-using libgpsfile2::PluginHandler;
-using libgpsfile2::handler::HandlerReaderBase;
-using libgpsfile2::handler::HandlerWriterBase;
-using libgpsfile2::handler::HandlerPlainReader;
-using libgpsfile2::handler::HandlerPlainWriter;
-using libgpsfile2::provider::ProviderReaderBase;
-using libgpsfile2::provider::ProviderWriterBase;
+using libgpsfile2::types::PluginDetails;
+using libgpsfile2::types::HandlerCreatorFunc;
+using libgpsfile2::types::PluginCreatorFunc;
 
 GpsfileManager::GpsfileManager (void) {
 	DEBUG_MSG("GpsfileManager::%s ()\n", __func__);
 
-	this->_writer_type_map.reserve (32);
-	this->_reader_type_map.reserve (32);
-	this->_writer_type_map.insert (this->_writer_type_map.begin (), 0);
-	this->_reader_type_map.insert (this->_reader_type_map.begin (), 0);
+	HandlerCreatorFunc plain_reader = [] (std::unique_ptr<provider::ProviderBase> provider_base, const std::string& path) -> std::unique_ptr<handler::HandlerBase> {
+		std::unique_ptr<provider::ProviderReaderBase> provider = utils::dynamic_unique_ptr_cast<provider::ProviderReaderBase>(std::move (provider_base));
+		std::unique_ptr<handler::HandlerBase> reader = std::make_unique<handler::HandlerPlainReader>(std::move (provider), path);
+		return reader;
+	};
+	HandlerCreatorFunc plain_writer = [] (std::unique_ptr<provider::ProviderBase> provider_base, const std::string& path) -> std::unique_ptr<handler::HandlerBase> {
+		std::unique_ptr<provider::ProviderWriterBase> provider = utils::dynamic_unique_ptr_cast<provider::ProviderWriterBase>(std::move (provider_base));
+		std::unique_ptr<handler::HandlerBase> writer = std::make_unique<handler::HandlerPlainWriter>(std::move (provider), path);
+		return writer;
+	};
+
+	this->addPlugin ({}, GpsfileManager::getProviderType<provider::ProviderReaderBase>(), plain_reader);
+	this->addPlugin ({}, GpsfileManager::getProviderType<provider::ProviderWriterBase>(), plain_writer);
 }
 
 GpsfileManager::~GpsfileManager (void) {
 	DEBUG_MSG("GpsfileManager::%s ()\n", __func__);
-
-	this->_data_file_table.clear ();
-	this->_writer_type_map.clear ();
-	this->_reader_type_map.clear ();
 }
 
-std::unique_ptr<HandlerReaderBase> GpsfileManager::createReader (std::unique_ptr<ProviderReaderBase> provider, const HandlerType& dht, const std::string& path, const std::string& type) {
-	DEBUG_MSG("GpsfileManager::%s (..., %d, %s, %s)\n", __func__, static_cast<int>(dht), path.c_str (), type.c_str ());
+const std::shared_ptr<GpsfileManager> GpsfileManager::getPtr (void) {
+	DEBUG_MSG("GpsfileManager::%s ()\n", __func__);
+	static std::shared_ptr<GpsfileManager> instance = std::shared_ptr<GpsfileManager>(new GpsfileManager ());
 
-	assert (dht);
-	assert (this->_reader_type_map[static_cast<int>(dht)] == dht.getHash ());
-	if (!dht) throw std::runtime_error ("dht is empty");
-
-	// Select the correct data handler class.
-	if (static_cast<int>(dht) == 0) return std::make_unique<HandlerPlainReader>(std::move (provider), path);
-
-	// Get the struct that contains all the data handler creator functions.
-	const std::shared_ptr<PluginHandler> dh = this->getDatahandlerFunctions (type);
-
-	return dh->createReader (this->_reader_type_map[static_cast<int>(dht)], std::move (provider), dht, path);
+	return instance;
 }
 
-std::unique_ptr<HandlerWriterBase> GpsfileManager::createWriter (std::unique_ptr<ProviderWriterBase> provider, const HandlerType& dht, const std::string& path, const std::string& type) {
-	DEBUG_MSG("GpsfileManager::%s (..., %d, %s, %s)\n", __func__, static_cast<int>(dht), path.c_str (), type.c_str ());
-
-	assert (dht);
-	assert (this->_writer_type_map[static_cast<int>(dht)] == dht.getHash ());
-	if (!dht) throw std::runtime_error ("dht is empty");
-
-	// Select the correct data handler class.
-	if (static_cast<int>(dht) == 0) return std::make_unique<HandlerPlainWriter>(std::move (provider), path);
-
-	// Get the struct that contains all the data handler creator functions.
-	const std::shared_ptr<PluginHandler> dh = this->getDatahandlerFunctions (type);
-
-	return dh->createWriter (this->_writer_type_map[static_cast<int>(dht)], std::move (provider), dht, path);
+void GpsfileManager::addPlugin (const std::string& extension, const std::size_t& provider_type, HandlerCreatorFunc func) {
+	DEBUG_MSG("GpsfileManager::%s (%s, %ld, %p)\n", __func__, extension.c_str (), provider_type, func);
+	GpsfileManager::KeyType key = std::make_pair (extension, provider_type);
+	this->_handler_map.insert (std::make_pair (key, func));
+	this->_provider_type_extension_map[provider_type].push_back (extension);
+	this->_extension_provider_type_map[extension].push_back (provider_type);
 }
 
-bool GpsfileManager::isExtentionMatch (const std::string& ext, const HandlerType& t) const {
-	DEBUG_MSG("GpsfileManager::%s (%s, %d)\n", __func__, ext.c_str (), static_cast<int>(t));
-	return this->isExtentionMatch (ext.c_str (), t);
-}
+void GpsfileManager::registar (const char* id, void* data_pointer) {
+	DEBUG_MSG("GpsfileManager::%s (%s, %p)\n", __func__, id, data_pointer);
+	(void)id;
 
-bool GpsfileManager::isExtentionMatch (const char *ext, const HandlerType& t) const {
-	DEBUG_MSG("GpsfileManager::%s (%s, %d)\n", __func__, ext, static_cast<int>(t));
-	char *c = const_cast<char *>(ext);
-
-	// If *ext starts with a '.', increase the pointer to exclusive the dot from the match.
-	while (c[0] == '.') c++;
-
-	// Loop over all data file handlers and check the type and code, if a match is found, return true.
-	for (const pluginDataFileEntry& e : this->_data_file_table) {
-		if (e.code.compare (c) == 0 && IS_SET (e.handler_types, static_cast<int>(t))) return true;
+	const types::PluginDetails* ptr = static_cast<types::PluginDetails*>(data_pointer);
+	for (const PluginCreatorFunc& func : ptr->handlers) {
+		func (GpsfileManager::getPtr ());
 	}
-
-	// No match was found.
-	return false;
 }
-/*
-void GpsfileManager::registerPlugin (const std::string code, const std::shared_ptr<PluginDetails> details, const std::shared_ptr<PluginHandler> handlers) {
-	DEBUG_MSG("GpsfileManager::%s (%s, %p, %p)\n", __func__, code.c_str (), details.get (), handlers.get ());
-	//if (GpsfileManager::instance_counter == 0) throw std::runtime_error ("Can not register a plugin before the GpsfilePlugin class is initialized");
-
-	for (const pluginDataFileEntry& e : this->_data_file_table) {
-		if (e.code.compare (code) == 0) return;
-	}
-
-	int h = 0;
-
-	for (const auto& [key, value] : handlers->_reader_creators) {
-		(void)value;
-		h |= (1 << key);
-	}
-
-	for (const auto& [key, value] : handlers->_writer_creators) {
-		(void)value;
-		h |= (1 << key);
-	}
-
-	const pluginDataFileEntry e = {code, h, details, handlers};
-
-	this->_data_file_table.push_back (e);
-
-	return;
+void GpsfileManager::deregistar (const char* id) {
+	DEBUG_MSG("GpsfileManager::%s (%s)\n", __func__, id);
+	(void)id;
+	/*
+	 * try {
+	 *	const std::string extension (id);
+	 *	const auto handlers = this->_extension_provider_type_map.at (extension);
+	 *	for (const auto& provider_type : handlers) {
+	 *		const KeyType key = std::make_pair (extension, provider_type);
+	 *		this->_handler_map.erase (key);
 }
-
-void GpsfileManager::removePlugin (const std::string code) {
-	DEBUG_MSG("GpsfileManager::%s (%s)\n", __func__, code.c_str ());
-
-	if (code.empty ()) return;
-	for (auto it = this->_data_file_table.cbegin (); it != this->_data_file_table.cend (); ++it) {
-		const pluginDataFileEntry& e = *it;
-		if (e.code.compare (code) == 0) {
-			this->_data_file_table.erase (it);
-			return;
-		}
-	}
-	return;
-}*/
-
-const std::vector<std::string> GpsfileManager::getDataFileExtentions (const HandlerType& t) {
-	DEBUG_MSG("GpsfileManager::%s (%d)\n", __func__, t);
-	std::vector<std::string> v;
-	v.reserve (this->_data_file_table.size ());
-
-	for (const pluginDataFileEntry& e : this->_data_file_table)
-		if (e.handlers->_reader_creators.size () > 0 || e.handlers->_reader_creators.size () > 0) v.push_back (e.code);
-
-	v.shrink_to_fit ();
-
-	return v;
-}
-
-const std::shared_ptr<PluginHandler> GpsfileManager::getDatahandlerFunctions (const std::string& ext) {
-	DEBUG_MSG("GpsfileManager::%s (%s)\n", __func__, ext.c_str ());
-	char *c = const_cast<char *>(ext.c_str ());
-
-	// If *ext starts with a '.', increase the pointer to exclusive the dot from the match.
-	while (c[0] == '.') c++;
-
-	// Loop over all data file handlers and check the type and code, if a match is found, return adress of data struct.
-	for (const pluginDataFileEntry& e : this->_data_file_table) {
-		if (e.code.compare (c) == 0) {
-			DEBUG_MSG("found at match with %s.\n", e.details->name);
-			return e.handlers;
-		}
-	}
-	INFO_MSG("No data handler found for data type %s.\n", c);
-
-	return nullptr;
-}
-
-int32_t GpsfileManager::registerWriter (const std::size_t& hash) {
-	DEBUG_MSG("GpsfileManager::%s (%ld)\n", __func__, hash);
-
-	int32_t num = static_cast<int32_t>(this->_writer_type_map.size ());
-
-	if (num > 31) throw std::runtime_error ("out of range");
-
-	this->_writer_type_map.insert (this->_writer_type_map.end (), hash);
-	//DEBUG_MSG("registered writer function with id: %d and hash: %ld\n", num, hash);
-	//DEBUG_MSG("size of _writer_type_map: %ld\n", GpsfileManager::_writer_type_map.size ());
-	//DEBUG_MSG("capacity of _writer_type_map: %ld\n", GpsfileManager::_writer_type_map.capacity ());
-	assert (this->_writer_type_map[num] == hash);
-	return num;
-}
-
-int32_t GpsfileManager::registerReader (const std::size_t& hash) {
-	DEBUG_MSG("GpsfileManager::%s (%ld)\n", __func__, hash);
-
-	int32_t num = static_cast<int32_t>(this->_reader_type_map.size ());
-	//if (num == 0) num++;
-	if (num > 31) throw std::runtime_error ("out of range");
-	this->_reader_type_map.insert (this->_reader_type_map.end (), hash);
-	//DEBUG_MSG("registered reader function with id: %d and hash: %ld\n", num, hash);
-	//DEBUG_MSG("size of _reader_type_map: %ld\n", GpsfileManager::_reader_type_map.size ());
-	//DEBUG_MSG("capacity of _reader_type_map: %ld\n", GpsfileManager::_reader_type_map.capacity ());
-	assert (this->_reader_type_map[num] == hash);
-	return num;
+this->_extension_provider_type_map.erase (extension);*/
 }

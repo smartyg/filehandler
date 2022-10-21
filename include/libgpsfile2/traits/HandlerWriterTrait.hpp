@@ -12,6 +12,18 @@ namespace libgpsfile2::handler {
 		concept CONCEPT_RETURN HandlerWriterTrait = requires(const T t) {
 			std::is_base_of<HandlerWriterBase, T>::value;
 		};
+
+		template<class T>
+		concept CONCEPT_RETURN HandlerWriterAbstractTrait = requires(const T t) {
+			std::is_abstract<T>::value;
+			std::is_base_of<HandlerWriterBase, T>::value;
+		};
+
+		template<class T>
+		concept CONCEPT_RETURN HandlerWriterFinalTrait = requires(const T t) {
+			std::is_final<T>::value;
+			std::is_base_of<HandlerWriterBase, T>::value;
+		};
 	}
 }
 

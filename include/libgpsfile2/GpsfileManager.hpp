@@ -2,14 +2,17 @@
 #define _LIBGPSFILE2_GPSFILEMANAGER_
 
 #include <memory>
-#include <iterator>
+#include <map>
 #include <vector>
 #include <list>
 #include <string>
+#include <string_view>
+#include <utility>
+#include <type_traits>
 #include <algorithm>
 
-#include <libgpsfile2/PluginHandler.hpp>
-#include <libgpsfile2/types/HandlerType.hpp>
+#include <libgpsfile2/types/HandlerCreatorFunc.hpp>
+#include <libgpsfile2/types/PluginCreatorFunc.hpp>
 #include <libgpsfile2/types/PluginDetails.hpp>
 #include <libgpsfile2/handler/HandlerReaderBase.hpp>
 #include <libgpsfile2/handler/HandlerWriterBase.hpp>
@@ -17,25 +20,16 @@
 #include <libgpsfile2/provider/ProviderWriterBase.hpp>
 #include <libgpsfile2/traits/ProviderReaderTrait.hpp>
 #include <libgpsfile2/traits/ProviderWriterTrait.hpp>
+#include <libgpsfile2/utils/dynamic_unique_ptr_cast.hpp>
 
 namespace libgpsfile2 {
 
 	class GpsfileManager final {
-		struct pluginDataFileEntry {
-			std::string code;
-			int handler_types;
-			std::shared_ptr<PluginDetails> details;
-			std::shared_ptr<PluginHandler> handlers;
+		using KeyType = std::pair<const std::string, const std::size_t>;
 
-			~pluginDataFileEntry (void) {
-				this->code.clear ();
-			}
-		};
-
-		std::vector<std::size_t> _writer_type_map;
-		std::vector<std::size_t> _reader_type_map;
-
-		std::vector<pluginDataFileEntry> _data_file_table;
+		std::map<const std::size_t, std::vector<std::string>> _provider_type_extension_map;
+		std::map<const std::string, std::vector<std::size_t>> _extension_provider_type_map;
+		std::map<KeyType, HandlerCreatorFunc> _handler_map;
 
 		GpsfileManager (void);
 		GpsfileManager (const GpsfileManager&) = delete;                // copy constructor
@@ -48,66 +42,47 @@ namespace libgpsfile2 {
 
 		~GpsfileManager (void);
 
-		std::unique_ptr<handler::HandlerReaderBase> createReader (std::unique_ptr<provider::ProviderReaderBase>, const HandlerType&, const std::string&, const std::string&);
-		std::unique_ptr<handler::HandlerWriterBase> createWriter (std::unique_ptr<provider::ProviderWriterBase>, const HandlerType&, const std::string&, const std::string&);
-
-		bool isExtentionMatch (const std::string&, const HandlerType&) const;
-		bool isExtentionMatch (const char *, const HandlerType&) const;
-
-		void registar (const char* id, void* data_pointer) {
-			(void)id;
-			(void)data_pointer;
-		}
-		void deregistar (const char* id) {
-			(void)id;
-		}
-
-		const std::vector<std::string> getDataFileExtentions (const HandlerType&);
-		const std::shared_ptr<PluginHandler> getDatahandlerFunctions (const std::string&);
-
-		template<provider::ProviderReaderTrait T>
-		void registerReaderType (HandlerType& type) {
-			assert (!type);
-			std::size_t type_hash = typeid (T).hash_code ();
-			auto it = std::find (this->_reader_type_map.begin (), this->_reader_type_map.end (), type_hash);
-			if (it != this->_reader_type_map.end ()) {
-				auto o = std::distance (this->_reader_type_map.begin (), it);
-				type.setValue (o, 1, type_hash);
-				return;
-			}
-
-			int32_t num = this->registerReader (type_hash);
-			type.setValue (num, 1, type_hash);
+		template <provider::ProviderReaderAbstractTrait ProviderBaseType, provider::ProviderReaderFinalTrait Provider>
+		[[nodiscard]] std::unique_ptr<handler::HandlerReaderBase> createReader (std::unique_ptr<Provider> provider, const std::string& path, const std::string& extension) const {
+			static_assert (std::is_base_of<ProviderBaseType, Provider>::value);
+			DEBUG_MSG("GpsfileManager::%s (%p, %s, %s)\n", __func__, provider.get(), path.c_str (), extension.c_str ());
+			KeyType key = std::make_pair (extension, GpsfileManager::getProviderType<ProviderBaseType>());
+			DEBUG_MSG("GpsfileManager::%s: key {%s, %ld}\n", __func__, key.first.c_str (), key.second);
+			try {
+				HandlerCreatorFunc func = this->_handler_map.at (key);
+				std::unique_ptr<handler::HandlerBase> handler_base = func (std::move (provider), path);
+				return utils::dynamic_unique_ptr_cast<handler::HandlerReaderBase>(std::move (handler_base));
+			} catch (std::exception& e) {
+				DEBUG_MSG("GpsfileManager::%s: %s\n", __func__, e.what ());
+				(void)e; }
+			return {};
 		}
 
-		template<provider::ProviderWriterTrait T>
-		void registerWriterType (HandlerType& type) {
-			assert (!type);
-			const std::size_t type_hash = typeid (T).hash_code ();
-			auto it = std::find (this->_writer_type_map.begin (), this->_writer_type_map.end (), type_hash);
-			if (it != this->_writer_type_map.end ()) {
-				auto o = std::distance (this->_writer_type_map.begin (), it);
-				//std::cout << "record num: " << std::to_string (o) << std::endl;
-				//std::cout << "size of _reader_type_map: " << std::to_string (GpsfilePlugin::_reader_type_map.size ()) << std::endl;
-				//std::cout << "capacity of _reader_type_map: " << std::to_string (GpsfilePlugin::_reader_type_map.capacity ()) << std::endl;
-				type.setValue (o, 2, type_hash);
-				return;
-			}
-
-			int32_t num = this->registerWriter (type_hash);
-			type.setValue (num, 2, type_hash);
+		template <provider::ProviderWriterAbstractTrait ProviderBaseType, provider::ProviderWriterFinalTrait Provider>
+		[[nodiscard]] std::unique_ptr<handler::HandlerWriterBase> createWriter (std::unique_ptr<Provider> provider, const std::string& path, const std::string& extension) const {
+			static_assert (std::is_base_of<ProviderBaseType, Provider>::value);
+			DEBUG_MSG("GpsfileManager::%s (%p, %s, %s)\n", __func__, provider.get(), path.c_str (), extension.c_str ());
+			KeyType key = std::make_pair (extension, GpsfileManager::getProviderType<ProviderBaseType>());
+			DEBUG_MSG("GpsfileManager::%s: key {%s, %ld}\n", __func__, key.first.c_str (), key.second);
+			try {
+				HandlerCreatorFunc func = this->_handler_map.at (key);
+				std::unique_ptr<handler::HandlerBase> handler_base = func (std::move (provider), path);
+				return utils::dynamic_unique_ptr_cast<handler::HandlerWriterBase>(std::move (handler_base));
+			} catch (std::exception& e) { (void)e; }
+			return {};
 		}
 
-		[[nodiscard]] static const std::shared_ptr<GpsfileManager> getPtr (void) {
-			static std::shared_ptr<GpsfileManager> instance;
+		void addPlugin (const std::string& extension, const std::size_t& provider_type, HandlerCreatorFunc func);
+		void registar (const char* id, void* data_pointer);
+		void deregistar (const char* id);
 
-			if (instance) return instance;
-			else return (instance = std::shared_ptr<GpsfileManager>(new GpsfileManager ()));
+		[[nodiscard]] static const std::shared_ptr<GpsfileManager> getPtr (void);
+
+		template <class ProviderBase>
+		inline constexpr static std::size_t getProviderType (void) {
+			static_assert (std::is_abstract<ProviderBase>::value && (std::is_base_of<provider::ProviderReaderBase, ProviderBase>::value || std::is_base_of<provider::ProviderWriterBase, ProviderBase>::value));
+			return typeid (ProviderBase).hash_code ();
 		}
-
-	private:
-		int32_t registerWriter (const std::size_t&);
-		int32_t registerReader (const std::size_t&);
 	};
 }
 

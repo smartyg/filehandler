@@ -34,6 +34,11 @@ AM_CFLAGS += -flto
 AM_CXXFLAGS += -flto
 endif
 
+if RELEASE
+AM_CFLAGS += -O3
+AM_CXXFLAGS += -O3
+endif
+
 if COVERAGE
 AM_CFLAGS += -fprofile-arcs -ftest-coverage
 AM_CXXFLAGS += -fprofile-arcs -ftest-coverage
@@ -90,7 +95,6 @@ libgpsfile2_include_HEADERS = include/libgpsfile2.hpp
 
 libgpsfile2_sub_includedir = $(includedir)/libgpsfile2
 libgpsfile2_sub_include_HEADERS = include/libgpsfile2/GpsfileManager.hpp \
-	include/libgpsfile2/PluginHandler.hpp \
 	include/libgpsfile2/PluginHelper.hpp
 
 libgpsfile2_sub_handler_includedir = $(includedir)/libgpsfile2/handler
@@ -104,8 +108,9 @@ libgpsfile2_sub_utils_include_HEADERS = include/libgpsfile2/utils/Iobuf.hpp \
 	include/libgpsfile2/utils/dynamic_unique_ptr_cast.hpp
 
 libgpsfile2_sub_types_includedir = $(includedir)/libgpsfile2/types
-libgpsfile2_sub_types_include_HEADERS = include/libgpsfile2/types/HandlerType.hpp \
-	include/libgpsfile2/types/PluginDetails.hpp \
+libgpsfile2_sub_types_include_HEADERS = include/libgpsfile2/types/PluginDetails.hpp \
+	include/libgpsfile2/types/HandlerCreatorFunc.hpp \
+	include/libgpsfile2/types/PluginCreatorFunc.hpp \
 	include/libgpsfile2/types/BasePlugin.hpp
 
 libgpsfile2_sub_traits_includedir = $(includedir)/libgpsfile2/traits

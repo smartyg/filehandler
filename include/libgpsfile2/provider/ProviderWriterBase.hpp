@@ -7,7 +7,7 @@
 
 namespace libgpsfile2::provider {
 
-	class ProviderWriterBase : virtual public ProviderBase {
+	class ProviderWriterBase : public ProviderBase {
 	public:
 		virtual ~ProviderWriterBase (void) = default;
 

@@ -12,7 +12,7 @@
 
 #include "gpxplugin.hpp"
 
-class GpxWriter: public libgpsfile2::handler::HandlerWriterBase {
+class GpxWriter final : public libgpsfile2::handler::HandlerWriterBase {
 public:
 	GpxWriter (const std::shared_ptr<GpxPlugin>, std::unique_ptr<libgpsfile2::provider::ProviderRouteWriterBase>, const std::string&);
 	~GpxWriter (void);

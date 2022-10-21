@@ -11,6 +11,18 @@ namespace libgpsfile2::provider {
 		concept CONCEPT_RETURN ProviderWriterTrait = requires(const T t) {
 			std::is_base_of<ProviderWriterBase, T>::value;
 		};
+
+		template<class T>
+		concept CONCEPT_RETURN ProviderWriterAbstractTrait = requires(const T t) {
+			std::is_abstract<T>::value;
+			std::is_base_of<ProviderWriterBase, T>::value;
+		};
+
+		template<class T>
+		concept CONCEPT_RETURN ProviderWriterFinalTrait = requires(const T t) {
+			std::is_final<T>::value;
+			std::is_base_of<ProviderWriterBase, T>::value;
+		};
 	}
 }
 

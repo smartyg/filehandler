@@ -9,6 +9,7 @@
 #include <libgpsfile2/handler/HandlerBase.hpp>
 #include <libgpsfile2/provider/ProviderWriterBase.hpp>
 #include <libgpsfile2/traits/ProviderWriterTrait.hpp>
+#include <libgpsfile2/utils/dynamic_unique_ptr_cast.hpp>
 
 namespace libgpsfile2::handler {
 
@@ -35,7 +36,7 @@ namespace libgpsfile2::handler {
 		template<libgpsfile2::provider::ProviderWriterTrait T>
 		std::unique_ptr<T> getProvider (void) {
 			if (this->_write_finished)
-				return dynamic_unique_ptr_cast<T> (std::move (this->_dp));
+				return libgpsfile2::utils::dynamic_unique_ptr_cast<T> (std::move (this->_dp));
 			return std::unique_ptr<T>();
 		}
 

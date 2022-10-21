@@ -8,7 +8,7 @@
 namespace libgpsfile2::provider {
 
 	// Base data handler class
-	class ProviderReaderBase : virtual public ProviderBase {
+	class ProviderReaderBase : public ProviderBase {
 	public:
 		virtual ~ProviderReaderBase (void) = default;
 		virtual const std::string getData (void) const = 0;

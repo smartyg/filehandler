@@ -3,7 +3,7 @@
 
 #include <memory>
 
-namespace libgpsfile2::types {
+namespace libgpsfile2::utils {
 	template<typename Derived, typename Base>
 	std::unique_ptr<Derived> dynamic_unique_ptr_cast (std::unique_ptr<Base>&& p) {
 		if(Derived *result = dynamic_cast<Derived *>(p.get ())) {
