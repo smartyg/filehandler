@@ -2,8 +2,7 @@
 
 #include <memory>
 #include <string>
-#include <PluginManager.hpp>
-#include <gpsdata/utils/Logger.hpp>
+#include <pluginframework/Controller.hpp>
 #include <gpsdata/utils/GpsDataFactoryBasic.hpp>
 #include <libgpsfile2.hpp>
 #include <libgpsfile2/provider/impl/ProviderGpsRoute.hpp>
@@ -27,7 +26,8 @@ int main (void) {
 	std::cout << "create plugin\n";
 	// load gpsfile plugin
 	const auto plugin = GpsfileManager::getPtr ();
-	pluginmanager::Manager::getInstance ().addManager (plugin);
+	pluginframework::Controller::getInstance ().addManager (plugin);
+	pluginframework::Controller::getInstance ().scanDirectory ("./.libs");
 
 	std::cout << "create factory\n";
 	// create factory for gps data

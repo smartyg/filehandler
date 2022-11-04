@@ -33,7 +33,7 @@ protected:
 	bool read (std::ostream *, const std::size_t&) override;
 
 private:
-	void addExtension (gpx::Extensions&, gpx::Report*, const libgpsfile2::provider::internal::ProviderRouteBase::RouteData&, const std::string&);
+	void addExtension (gpx::Extensions*, gpx::Report*, const libgpsfile2::provider::internal::ProviderRouteBase::RouteData&, const std::string&);
 };
 
 #endif /* _X_GPSREADER_HPP_ */

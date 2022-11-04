@@ -1,6 +1,5 @@
 #include "config.h"
 
-#include <features.h>
 #include <gpsdata.hpp>
 #include <gpsdata/utils/GpsDataFactoryBasic.hpp>
 #include <libgpsfile2/provider/impl/ProviderGpsRoute.hpp>

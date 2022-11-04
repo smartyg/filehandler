@@ -1,12 +1,11 @@
 #include "config.h"
-#include <features.h>
 
 #include "gpxreport.hpp"
 
 #include <string>
 #include <gpx/Report.h>
 #include <gpx/Node.h>
-#include <gpsdata/utils/Logger.hpp>
+#include <Logger.hpp>
 
 GpxReport::GpxReport (void) {
 }
@@ -22,7 +21,7 @@ void GpxReport::report(const gpx::Node *node, gpx::Report::Warning warning,  con
 		text = (node->getType() == gpx::Node::ATTRIBUTE ? "Attribute " : "Element ") + node->getName() + " : ";
 	}
 
-	text += GpxReport::text(warning);
+	text += GpxReport::text (warning);
 
 	if (!extra.empty())
 	{
@@ -31,7 +30,7 @@ void GpxReport::report(const gpx::Node *node, gpx::Report::Warning warning,  con
 
 	text + ".";
 
-	NOTICE_MSG("%s\n", text.c_str());
+	NOTICE_MSG ("{:s}\n", text);
 }
 
 

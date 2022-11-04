@@ -1,5 +1,4 @@
 #include "config.h"
-#include <features.h>
 
 #include "gpxreader.hpp"
 
@@ -10,7 +9,7 @@
 #include <ostream>
 #include <gpx/Parser.h>
 #include <gpx/Writer.h>
-#include <gpsdata/utils/Logger.hpp>
+#include <Logger.hpp>
 #include <libgpsfile2/provider/ProviderRouteBase.hpp>
 #include <libgpsfile2/provider/ProviderRouteReaderBase.hpp>
 
@@ -18,50 +17,49 @@
 #include "gpxreport.hpp"
 
 using libgpsfile2::provider::ProviderRouteReaderBase;
-//using libgpsfile2::provider::ProviderRouteBaseTypes;
 using libgpsfile2::provider::internal::ProviderRouteBase;
 
 GpxReader::GpxReader (const std::shared_ptr<GpxPlugin> base, std::unique_ptr<ProviderRouteReaderBase> dp, const std::string& path) : HandlerBase (path), HandlerReaderBase (std::move (dp), path) {
+	DEBUG_MSG ("GpxReader::{:s} ({:p}, {:p}, {:s})\n", __func__, fmt::ptr (base), fmt::ptr (dp), path);
 	this->_base_instance = base;
-	//this->_dp = dp;
 	this->_reporter = new GpxReport ();
 	this->_parser = new gpx::Writer ();
 	this->_root = new gpx::GPX ();
 	this->_provider = dynamic_cast<ProviderRouteReaderBase*> (this->_dp.get ());
 	this->_init = false;
-	//this->_extension_namespaces.reserve (4);
 }
 
 GpxReader::~GpxReader (void) {
+	DEBUG_MSG ("GpxReader::{:s} ()\n", __func__);
 	this->_base_instance = nullptr;
 	this->_dp.reset ();
-	//this->_extension_namespaces.reset ();
 	delete this->_parser;
 	delete this->_root;
+	delete this->_reporter;
 }
 
-void GpxReader::addExtension (gpx::Extensions& extensions, gpx::Report* report, const ProviderRouteBase::RouteData& t, const std::string& data) {
-	DEBUG_MSG("GpxReader::%s (..., %p, %d, %s)\n", __func__, report, t, data.c_str ());
+void GpxReader::addExtension (gpx::Extensions* extensions, gpx::Report* report, const ProviderRouteBase::RouteData& t, const std::string& data) {
+	DEBUG_MSG ("GpxReader::{:s} ({:p}, {:p}, {:d}, {:s})\n", __func__, fmt::ptr (extensions), fmt::ptr (report), t, data);
 	std::string_view name;
 	std::string_view prefix;
 	// Loop over registered extension namespaces
 	for (const auto& [tag, uri, url] : this->_extension_namespaces) {
-		//DEBUG_MSG("check if type %d is in namespace %s\n", t, std::string (uri).c_str ());
+		DEBUG_2_MSG (1, "check if type {:d} is in namespace {:s}\n", t, uri);
 		name = this->_base_instance->namespaceNameLookup (uri, t);
-		//DEBUG_MSG("  value of name: %s\n", std::string (name).c_str ());
+		DEBUG_2_MSG(1, "  value of name: {:s}\n", name);
 		prefix = tag;
 		if (!name.empty ()) break;
 	}
 	// check if this returns a valid (non-empty) name
 	if (name.empty ()) {
-		//DEBUG_MSG("No match found for type %d, check other namespaces\n", t);
+		DEBUG_2_MSG (1, "No match found for type {:d}, check other namespaces\n", t);
 		// itterate over all namespaces till a match is found and add namespace to namespace list
 		for (const auto& [tag, uri, url] : this->_base_instance->allNamespaces ()) {
-			//DEBUG_MSG("check if type %d is in namespace %s\n", t, std::string (uri).c_str ());
+			DEBUG_2_MSG(1, "check if type {:d} is in namespace {:s}\n", t, uri);
 			name = this->_base_instance->namespaceNameLookup (uri, t);
-			//DEBUG_MSG("  value of name: %s\n", std::string (name).c_str ());
+			DEBUG_2_MSG(1, "  value of name: {:s}\n", name);
 			if (!name.empty ()) {
-				//DEBUG_MSG("  found a match with tag: %s; name: %s\n", std::string (tag).c_str (), std::string (name).c_str ());
+				DEBUG_2_MSG(1, "  found a match with tag: {:s}; name: {:s}\n", tag, name);
 				prefix = tag;
 				this->_extension_namespaces.push_back (std::tuple (tag, uri, url));
 				break;
@@ -74,13 +72,12 @@ void GpxReader::addExtension (gpx::Extensions& extensions, gpx::Report* report, 
 	std::ostringstream full_name;
 	full_name << prefix << ":" << name << '\0';
 
-	DEBUG_MSG("add tag: %s; data: %s\n", full_name.view ().data (), data.c_str ());
-	//gpx::Node* node = extensions.add (full_name.view ().data (), gpx::Node::ELEMENT, report);
-	//node->setValue (data);
-	extensions.add (full_name.view ().data (), gpx::Node::ELEMENT, report)->setValue (data);
+	DEBUG_2_MSG (2, "add tag: {:s}; data: {:s}\n", full_name.view (), data);
+	extensions->add (full_name.view ().data (), gpx::Node::ELEMENT, report)->setValue (data);
 }
 
 void GpxReader::loadRoutes (void) {
+	DEBUG_MSG ("GpxReader::{:s} ()\n", __func__);
 	this->_init = true;
 	this->_root->add ("xmlns", gpx::Node::ATTRIBUTE)->setValue ("http://www.topografix.com/GPX/1/1"); // Some tools need this
 	this->_root->add ("xmlns:xsi", gpx::Node::ATTRIBUTE)->setValue ("http://www.w3.org/2001/XMLSchema-instance");
@@ -94,33 +91,42 @@ void GpxReader::loadRoutes (void) {
 		for (const auto& route_data : route.getData ()) {
 			const ProviderRouteBase::RouteData& t = std::get<0>(route_data);
 			const std::string& data = std::get<1>(route_data);
-			std::cout << "    data type: " << std::to_string (t) << " value: " << data << std::endl;
+			DEBUG_2_MSG (2, "data type: {:d}; value: {:s}\n", static_cast<int>(t), data);
+				//std::cout << "data type: " << std::to_string (t) << "; value: " << data << std::endl;
 			switch (t) {
 				case ProviderRouteReaderBase::TYPE_NAME:
+					DEBUG_2_MSG (3, "  set name to: {:s}\n", data);
 					trk->name ().add (this->_reporter)->setValue (data);
 					break;
 				case ProviderRouteReaderBase::TYPE_COMMENT:
+					DEBUG_2_MSG (3, "  set comment to: {:s}\n", data);
 					trk->cmt ().add (this->_reporter)->setValue (data);
 					break;
 				case ProviderRouteReaderBase::TYPE_DESCRIPTION:
+					DEBUG_2_MSG (3, "  set description to: {:s}\n", data);
 					trk->desc ().add (this->_reporter)->setValue (data);
 					break;
 				case ProviderRouteReaderBase::TYPE_SRC:
+					DEBUG_2_MSG (3, "  set source type to: {:s}\n", data);
 					trk->src ().add (this->_reporter)->setValue (data);
 					break;
 				case ProviderRouteReaderBase::TYPE_LINK: {
+					DEBUG_2_MSG (3, "  set link to: {:s}\n", data);
 					gpx::Link* link = dynamic_cast<gpx::Link*>(trk->links ().add (this->_reporter));
 					link->href ().add (this->_reporter)->setValue (data);
 					link->text ().add (this->_reporter)->setValue (data);
 					break; }
 				case ProviderRouteReaderBase::TYPE_ID:
+					DEBUG_2_MSG (3, "  set id to: {:s}\n", data);
 					trk->number ().add (this->_reporter)->setValue (data);
 					break;
 				case ProviderRouteReaderBase::TYPE_TYPE:
+					DEBUG_2_MSG (3, "  set type to: {:s}\n", data);
 					trk->type ().add (this->_reporter)->setValue (data);
 					break;
 				default:
-					this->addExtension (trk->extensions (), this->_reporter, t, data);
+					gpx::Extensions* e =  dynamic_cast<gpx::Extensions*>(trk->extensions ().add (this->_reporter));
+					this->addExtension (e, this->_reporter, t, data);
 					break;
 			}
 		}
@@ -131,8 +137,9 @@ void GpxReader::loadRoutes (void) {
 			for (const auto& segment_data : segment.getData ()) {
 				const auto& t = std::get<0>(segment_data);
 				const std::string& data = std::get<1>(segment_data);
-				std::cout << "    data type: " << std::to_string (t) << " value: " << data << std::endl;
-				this->addExtension (trkseg->extensions (), this->_reporter, t, data);
+				DEBUG_2_MSG (2, "data type: {:d}; value: {:s}\n", static_cast<int>(t), data);
+				gpx::Extensions* e =  dynamic_cast<gpx::Extensions*>(trkseg->extensions ().add (this->_reporter));
+				this->addExtension (e, this->_reporter, t, data);
 			}
 
 			for (const auto& point : segment.getPoints ()) {
@@ -141,69 +148,90 @@ void GpxReader::loadRoutes (void) {
 				for (const auto& point_data : point.getData ()) {
 					const auto& t = std::get<0>(point_data);
 					const std::string& data = std::get<1>(point_data);
-					std::cout << "    data type: " << std::to_string (t) << " value: " << data << std::endl;
+					//DEBUG_MSG ("data type: {:d}; value: {:s}\n", __func__, static_cast<int>(t), data.c_str ());
+					DEBUG_MSG ("data type: {:d}; value: {:s}\n", static_cast<int>(t), data.c_str ());
 					switch (t) {
 						case ProviderRouteReaderBase::TYPE_LAT:
+							DEBUG_2_MSG (3, "  set latitude to: {:s}\n", data);
 							trkpt->lat ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_LON:
+							DEBUG_2_MSG (3, "  set longitude to: {:s}\n", data);
 							trkpt->lon ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_ELE:
+							DEBUG_2_MSG (3, "  set elevation to: {:s}\n", data);
 							trkpt->ele ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_TIME:
+							DEBUG_2_MSG (3, "  set time to: {:s}\n", data);
 							trkpt->time ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_MAGVAR:
+							DEBUG_2_MSG (3, "  set magver to: {:s}\n", data);
 							trkpt->magvar ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_GEOIDHEIGHT:
+							DEBUG_2_MSG (3, "  set geoidheight to: {:s}\n", data);
 							trkpt->geoidheight ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_NAME:
+							DEBUG_2_MSG (3, "  set name to: {:s}\n", data);
 							trkpt->name ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_COMMENT:
+							DEBUG_2_MSG (3, "  set comment to: {:s}\n", data);
 							trkpt->cmt ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_DESCRIPTION:
+							DEBUG_2_MSG (3, "  set description to: {:s}\n", data);
 							trkpt->desc ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_SRC:
+							DEBUG_2_MSG (3, "  set source type to: {:s}\n", data);
 							trkpt->src ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_TYPE:
+							DEBUG_2_MSG (3, "  set type to: {:s}\n", data);
 							trkpt->type ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_FIX:
+							DEBUG_2_MSG (3, "  set fix to: {:s}\n", data);
 							trkpt->fix ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_SAT:
+							DEBUG_2_MSG (3, "  set sat to: {:s}\n", data);
 							trkpt->sat ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_HDOP:
+							DEBUG_2_MSG (3, "  set hdop to: {:s}\n", data);
 							trkpt->hdop ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_VDOP:
+							DEBUG_2_MSG (3, "  set vdop to: {:s}\n", data);
 							trkpt->vdop ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_PDOP:
+							DEBUG_2_MSG (3, "  set pdop to: {:s}\n", data);
 							trkpt->pdop ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_AGEOFDGPSDATA:
+							DEBUG_2_MSG (3, "  set ageofdgpsdata to: {:s}\n", data);
 							trkpt->ageofdgpsdata ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_DGPSID:
+							DEBUG_2_MSG (3, "  set dgpsid to: {:s}\n", data);
 							trkpt->dgpsid ().add (this->_reporter)->setValue (data);
 							break;
 						case ProviderRouteReaderBase::TYPE_LINK: {
+							DEBUG_2_MSG (3, "  set link to: {:s}\n", data);
 							gpx::Link* link = dynamic_cast<gpx::Link*>(trkpt->links ().add (this->_reporter));
 							link->href ().add (this->_reporter)->setValue (data);
 							link->text ().add (this->_reporter)->setValue (data);
 							break; }
 						default:
-							this->addExtension (trkpt->extensions (), this->_reporter, t, data);
+							gpx::Extensions* e =  dynamic_cast<gpx::Extensions*>(trkpt->extensions ().add (this->_reporter));
+							this->addExtension (e, this->_reporter, t, data);
 							break;
 					}
 				}
@@ -225,19 +253,6 @@ void GpxReader::loadRoutes (void) {
 bool GpxReader::read (std::ostream *s, const std::size_t&) {
 	if (!this->_init) this->loadRoutes ();
 
-
-
-	//GpsRoute_ptr_const route = this->_dp->getRoute ();
-	//(void) route;
-/*
-	gpx::Node *attribute = this->_root->version().add();
-	gpx::WPT  *wpt       = this->_root->wpts().add(&cerr);
-	gpx::Node *extension = this->_root->add("xmlns",gpx::Node::ATTRIBUTE);
-
-	attribute->setValue("1.1");
-	wpt->lat().add()->setValue("1.60000");
-	extension->setValue("http://www.topografix.com/GPX/1/1");
-*/
 	this->_parser->write (*s, this->_root, true);
 
 	return true;

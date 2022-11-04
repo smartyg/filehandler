@@ -7,7 +7,7 @@
 #include <string>
 #include <functional>
 #include <utility>
-#include <cpluginmanager/types/PluginDetails.h>
+#include <pluginframework/types/PluginDetails.h>
 
 #include <libgpsfile2/GpsfileManager.hpp>
 #include <libgpsfile2/types/PluginDetails.hpp>
@@ -42,6 +42,12 @@ namespace libgpsfile2 {
 
 	public:
 		~PluginHelper (void) = default;
+
+		static void deleteData (::PluginDetails& details) {
+			types::PluginDetails* data = static_cast<types::PluginDetails*>(details.data);
+			details.data = nullptr;
+			delete data;
+		}
 
 		[[nodiscard]] static const std::shared_ptr<PluginHelper> constructPlugin (const char* file_type, const char* name, const char* author, const char* license, const uint8_t& major_version, const uint8_t& minor_version) {
 			const std::shared_ptr<PluginHelper> helper = std::shared_ptr<PluginHelper>(new PluginHelper (file_type, name, author, license, major_version, minor_version));

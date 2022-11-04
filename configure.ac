@@ -152,28 +152,31 @@ AX_CXX_COMPILE_STDCXX(20, ext, mandatory)
 AC_SYS_LARGEFILE
 
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h string.h sys/stat.h locale.h time.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
-AC_TYPE_UID_T
 AC_C_INLINE
-AC_TYPE_MODE_T
-AC_TYPE_OFF_T
+AC_TYPE_UINT8_T
+AC_TYPE_UINT32_T
+AC_TYPE_INT8_T
+AC_TYPE_INT64_T
 AC_TYPE_SIZE_T
-AC_TYPE_UINT64_T
+AC_TYPE_SSIZE_T
+AC_TYPE_OFF_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC
-AC_CHECK_FUNCS([memset setlocale strcpy])
+AC_FUNC_REALLOC
+AC_CHECK_FUNCS([memmove])
 
 # Checks for programs.
 AC_CHECK_PROGS([GIT], [git])
 
 # Checks for packages.
-PKG_CHECK_MODULES([PLUGINMANAGER], [libcpluginmanager])
-PKG_CHECK_MODULES([GPSDATA], [gpsdata])
-PKG_CHECK_MODULES([GPSDATA_UTILS], [libgpsdata-utils])
+PKG_CHECK_MODULES([CPPLOGGER], [cpplogger >= 0.1.0])
+PKG_CHECK_MODULES([PLUGINFRAMEWORK], [pluginframework >= 0.0.1])
+PKG_CHECK_MODULES([GPSDATA], [gpsdata >= 0.0.3])
+PKG_CHECK_MODULES([GPSDATA_UTILS], [libgpsdata-utils >= 0.0.3])
 PKG_CHECK_MODULES([GPX], [gpxlib])
 
 # Checks for libraries.

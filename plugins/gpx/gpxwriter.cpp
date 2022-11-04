@@ -1,5 +1,4 @@
 #include "config.h"
-#include <features.h>
 
 #include "gpxwriter.hpp"
 
@@ -9,24 +8,21 @@
 #include <istream>
 #include <utility>
 #include <gpx/Parser.h>
-#include <gpsdata/utils/Logger.hpp>
+#include <Logger.hpp>
 #include <gpsdata/utils/PointDate.hpp>
-//#include <libgpsfile2/provider/ProviderRouteBase.hpp>
 #include <libgpsfile2/provider/ProviderRouteWriterBase.hpp>
 #include <libgpsfile2/utils/Iobuf.hpp>
 
 #include "gpxplugin.hpp"
 #include "gpxreport.hpp"
 
-#define GPX_TIME_FORMATS { "%Y-%m-%dT%TZ" }
+#define GPX_TIME_FORMATS { "%Y-%m-{:d}T%TZ" }
 
-//using libgpsfile2::provider::ProviderWriterBase;
 using libgpsfile2::provider::ProviderRouteWriterBase;
 using libgpsfile2::utils::Iobuf;
-//using libgpsfile2::provider::internal::ProviderRouteBase;
 
 GpxWriter::GpxWriter (const std::shared_ptr<GpxPlugin> base, std::unique_ptr<ProviderRouteWriterBase> dp, const std::string& path) : HandlerBase (path), HandlerWriterBase (std::move (dp), path) {
-	DEBUG_MSG("GpxWriter::%s ()\n", __func__);
+	DEBUG_MSG ("GpxWriter::{:s} ()\n", __func__);
 	this->_base_instance = base;
 	this->_reporter = new GpxReport ();
 	this->_parser = new gpx::Parser (this->_reporter);
@@ -34,7 +30,7 @@ GpxWriter::GpxWriter (const std::shared_ptr<GpxPlugin> base, std::unique_ptr<Pro
 }
 
 GpxWriter::~GpxWriter (void) {
-	DEBUG_MSG("GpxWriter::%s ()\n", __func__);
+	DEBUG_MSG ("GpxWriter::{:s} ()\n", __func__);
 	this->_base_instance = nullptr;
 	this->_provider = nullptr;
 	//this->_dp = nullptr;
@@ -43,13 +39,13 @@ GpxWriter::~GpxWriter (void) {
 }
 
 bool GpxWriter::write (std::istream *s, const bool& is_final) {
-	DEBUG_MSG("GpxWriter::%s (%p, %d)\n", __func__, s, is_final);
+	DEBUG_MSG ("GpxWriter::{:s} ({:p}, {:d})\n", __func__, fmt::ptr (s), is_final);
 	Iobuf *sbuf = reinterpret_cast<Iobuf *>(s->rdbuf ());
 	const char *b = sbuf->getBuffer ();
 	size_t l = sbuf->in_avail ();
 
 	bool res = this->_parser->parse (b, l, is_final);
-	if (!res) ERROR_MSG("Parsing of %s failed due to %s on line %s and column %s\n", this->getPath(), this->_parser->errorText(), this->_parser->errorLineNumber(), this->_parser->errorColumnNumber());
+	if (!res) ERROR_MSG("Parsing of {:s} failed due to {:s} on line {:s} and column {:s}\n", this->getPath (), this->_parser->errorText (), this->_parser->errorLineNumber (), this->_parser->errorColumnNumber ());
 
 	sbuf->consumeGet (l);
 
@@ -63,15 +59,17 @@ bool GpxWriter::write (std::istream *s, const bool& is_final) {
 }
 
 void GpxWriter::addData (auto& obj, const ProviderRouteWriterBase::RouteData& t, const gpx::Node& data) {
+	DEBUG_MSG ("GpxWriter::{:s} ({:d}, {:p})\n", __func__, t, fmt::ptr (&data));
 	if (!data.getValue ().empty ()) {
 		if (obj.addData (t, data.getValue ()))
-			DEBUG_MSG("GpxWriter::%s: success setting type %d to: %s\n", __func__, t, data.getValue ().c_str ());
+			DEBUG_2_MSG (1, "GpxWriter::{:s}: success setting type {:d} to: {:s}\n", __func__, t, data.getValue ());
 		else
-			INFO_MSG("GpxWriter::%s: failed setting type %d to: %s\n", __func__, t, data.getValue ().c_str ());
+			INFO_MSG("GpxWriter::{:s}: failed setting type {:d} to: {:s}\n", __func__, t, data.getValue ());
 	}
 }
 
 std::tuple<std::string_view, std::string_view> GpxWriter::getNamespace (const std::string& full_name) {
+	DEBUG_MSG ("GpxWriter::{:s} ({:s})\n", __func__, full_name);
 	auto pos = full_name.find_first_of (':');
 	return {
 		std::string_view (full_name).substr (0, (pos == std::string::npos ? 0 : pos)),
@@ -80,6 +78,7 @@ std::tuple<std::string_view, std::string_view> GpxWriter::getNamespace (const st
 }
 
 const std::string_view GpxWriter::getNamespaceUri (const std::string_view ns) {
+	DEBUG_MSG ("GpxWriter::{:s} ({:s})\n", __func__, ns);
 	for (const auto& [key, value] : this->_namespace_map) {
 		if (key.compare (ns) == 0) return std::string_view (value);
 	}
@@ -87,6 +86,7 @@ const std::string_view GpxWriter::getNamespaceUri (const std::string_view ns) {
 }
 
 ProviderRouteWriterBase::RouteData GpxWriter::getGuessedType (const std::string_view name) {
+	DEBUG_MSG ("GpxWriter::{:s} ({:s})\n", __func__, name);
 	ProviderRouteWriterBase::RouteData t = ProviderRouteWriterBase::TYPE_NO_TYPE;
 	if ((t = ProviderRouteWriterBase::getType (name)) != ProviderRouteWriterBase::TYPE_NO_TYPE) return t;
 	return t;
@@ -94,7 +94,8 @@ ProviderRouteWriterBase::RouteData GpxWriter::getGuessedType (const std::string_
 
 template<class T>
 void GpxWriter::addExtensionData (T& route, gpx::Extensions& extensions) {
-	(void)(route);
+	DEBUG_MSG ("GpxWriter::{:s} ({:p}, {:p})\n", __func__, fmt::ptr (&route), fmt::ptr (&extensions));
+
 	for (const gpx::Node* extension : extensions.getElements ()) {
 		const std::string& full_name = extension->getName ();
 		const std::string& value = extension->getValue ();
@@ -106,20 +107,20 @@ void GpxWriter::addExtensionData (T& route, gpx::Extensions& extensions) {
 		if (t == ProviderRouteWriterBase::TYPE_NO_TYPE)
 			t = this->getGuessedType (name);
 
-		NOTICE_MSG("track point extension namespace: %.*s (%.*s); name: %.*s; type: %d; value: %s.\n", static_cast<int>(ns.length ()), ns.data (),
-				   static_cast<int>(ns_uri.length ()), ns_uri.data (),
-				   static_cast<int>(name.length ()), name.data (),
-				   t, value.c_str ());
+		NOTICE_MSG ("track point extension namespace: {:s} ({:s}); name: {:s}; type: {:d}; value: {:s}.\n", ns,
+				   ns_uri,
+				   name,
+				   t, value);
 		GpxWriter::addData (route, t, *extension);
 
-		//NOTICE_MSG("track point extension namespace: %.*s; name: %.*s; value: %s.\n", static_cast<int>(ns.length ()), ns.data (), static_cast<int>(name.length ()), name.data (), value.c_str ());
+		NOTICE_MSG ("track point extension namespace: {:s}; name: {:s}; value: {:s}.\n", ns, name, value);
 	}
 }
 
 bool GpxWriter::parseData (gpx::GPX *root) {
-	DEBUG_MSG("GpxWriter::%s ()\n", __func__);
+	DEBUG_MSG("GpxWriter::{:s} ({:p})\n", __func__, fmt::ptr (root));
 	if (root->trks().list().size() < 1) {
-		NOTICE_MSG("No tracks have been found in file %s.\n", this->getPath ());
+		NOTICE_MSG ("No tracks have been found in file {:s}.\n", this->getPath ());
 		return false;
 	}
 
@@ -127,7 +128,7 @@ bool GpxWriter::parseData (gpx::GPX *root) {
 
 	for (const gpx::Node* e : root->getAttributes ()) {
 		if (e->getName ().compare (0, 6, "xmlns:") == 0) {
-			NOTICE_MSG("namespace add: %s; value: %s.\n", e->getName (). substr (6).c_str (), e->getValue ().c_str ());
+			NOTICE_MSG ("namespace add: {:s}; value: {:s}.\n", e->getName (). substr (6), e->getValue ());
 			this->_namespace_map.insert (std::pair (e->getName (). substr (6), e->getValue ()));
 		}
 	}
@@ -188,7 +189,7 @@ void GpxWriter::readExtensions (const std::list<gpx::Node *>& extensions, const 
 			else if (name.compare (0, 8, "gpxdata:", 8) == 0) ns_len = 8;
 		}
 
-		NOTICE_MSG("track point extension type: %s; value: %s.\n", name.data () + ns_len, value.c_str ());
+		NOTICE_MSG ("track point extension type: {:s}; value: {:s}.\n", name.data () + ns_len, value);
 
 		if (name.compare (ns_len, std::string::npos, "temp") == 0) this->_provider->addTrackPointData (route, segment, time, "TEMPERATURE", value);
 		else if (name.compare (ns_len, std::string::npos, "atemp") == 0) this->_provider->addTrackPointData (route, segment, time, "TEMPERATURE", value);

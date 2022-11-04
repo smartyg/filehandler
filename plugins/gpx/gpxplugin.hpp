@@ -6,7 +6,7 @@
 #include <tuple>
 #include <string_view>
 #include <stdexcept>
-#include <gpsdata/utils/Logger.hpp>
+#include <Logger.hpp>
 #include <libgpsfile2/provider/ProviderRouteBase.hpp>
 #include <libgpsfile2/types/BasePlugin.hpp>
 
@@ -58,7 +58,7 @@ public:
 	}
 
 	inline libgpsfile2::provider::internal::ProviderRouteBase::RouteData namespaceTypeLookup (const std::string_view ns_uri, const std::string_view name) const {
-		DEBUG_MSG("GpxPlugin::%s (%s, %d)\n", __func__, std::string (ns_uri).c_str (), std::string (name).c_str ());
+		DEBUG_MSG ("GpxPlugin::{:s} ({:s}, {:s})\n", __func__, ns_uri, name);
 		for (const auto& [key1, value1] : this->_lookup_writer) {
 			if (ns_uri.compare (key1) == 0) {
 				for (const auto& [key2, value2] : value1) {
@@ -70,13 +70,13 @@ public:
 	}
 
 	inline const std::string_view namespaceNameLookup (const std::string_view ns_uri, const libgpsfile2::provider::internal::ProviderRouteBase::RouteData& t) const {
-		DEBUG_MSG("GpxPlugin::%s (%s, %d)\n", __func__, std::string (ns_uri).c_str (), t);
+		DEBUG_MSG("GpxPlugin::{:s} ({:s}, {:d})\n", __func__, ns_uri, t);
 		for (const auto& [key1, value1] : this->_lookup_reader) {
 			//DEBUG_MSG("  Compare against namespace %s\n", std::string (key1).c_str ());
 			if (ns_uri.compare (key1) == 0) {
 				try {
 					//DEBUG_MSG("    check if %d is present\n", t);
-					DEBUG_MSG("    value of type %d: %s\n", t, std::string (value1.at (t)).c_str ());
+					DEBUG_2_MSG(1, "    value of type {:d}: {:s}\n", t, value1.at (t));
 					//const std::string_view ret = value1.at (t);
 					//DEBUG_MSG("    value of type %d: %s\n", t, std::string (ret).c_str ());
 					//return ret;

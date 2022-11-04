@@ -1,27 +1,26 @@
 #include "config.h"
-#include <features.h>
 
 #include "HandlerPlainReader.hpp"
 
 #include <memory>
 #include <string>
 #include <ostream>
-#include <gpsdata/utils/Logger.hpp>
+#include <Logger.hpp>
 
 #include "libgpsfile2/provider/ProviderReaderBase.hpp"
 
 using libgpsfile2::handler::HandlerPlainReader;
 
 HandlerPlainReader::HandlerPlainReader (std::unique_ptr<libgpsfile2::provider::ProviderReaderBase> provider, const std::string& path) : HandlerBase(path), HandlerReaderBase (std::move (provider), path) {
-	DEBUG_MSG("HandlerPlainReader::%s (%p, %s)\n", __func__, provider.get (), path.c_str ());
+	DEBUG_MSG ("HandlerPlainReader::{:s} ({:p}, {:s})\n", __func__, fmt::ptr (provider), path);
 }
 
 HandlerPlainReader::~HandlerPlainReader (void) {
-	DEBUG_MSG("HandlerPlainReader::%s ()\n", __func__);
+	DEBUG_MSG ("HandlerPlainReader::{:s} ()\n", __func__);
 }
 
 bool HandlerPlainReader::read (std::ostream *s, const std::size_t& len) {
-	DEBUG_MSG("HandlerPlainReader::%s (%p, %ld)\n", __func__, s, len);
+	DEBUG_MSG ("HandlerPlainReader::{:s} ({:p}, {:d})\n", __func__, fmt::ptr (s), len);
 	// len is not used as we write only once and put in all characters that we can get.
 	(void)len;
 

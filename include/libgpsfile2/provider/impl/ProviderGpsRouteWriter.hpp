@@ -5,7 +5,6 @@
 #include <vector>
 #include <string>
 #include <gpsdata.hpp>
-//#include <gpsdata/traits/GpsRoute.hpp>
 #include <gpsdata/utils/PointDate.hpp>
 
 #include <libgpsfile2/provider/impl/ProviderGpsRouteBase.hpp>
@@ -108,12 +107,6 @@ namespace libgpsfile2::provider {
 					gpsdata::utils::Convert::convertValue (id, data, true);
 					r->setId (id);
 					break;
-				}
-				case ProviderRouteBase::TYPE_TIMEZONE: {
-					int32_t o;
-					gpsdata::utils::Convert::convertValue (o, data, true);
-					r->setTimezoneOffset(o);
-					return true;
 				}
 				case ProviderRouteBase::TYPE_SPORT:
 					r->setActivityType (data);

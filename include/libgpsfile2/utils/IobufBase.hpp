@@ -8,7 +8,7 @@
 #include <streambuf>
 #include <algorithm>
 #include <stdexcept>
-#include <gpsdata/utils/Logger.hpp>
+#include <Logger.hpp>
 
 namespace libgpsfile2::utils {
 
@@ -61,7 +61,7 @@ namespace libgpsfile2::utils {
 
 	public:
 		explicit IobufBase (const std::size_t& buffer_size = (1024 * 1024)) : std::basic_streambuf<_CharT, _Traits> () {
-			DEBUG_MSG ("IobufBase::%s (%ld)\n", __func__, buffer_size);
+			DEBUG_MSG ("IobufBase::{:s} ({:d})\n", __func__, buffer_size);
 
 			this->_buf_beg = static_cast<char_type *>(std::malloc (buffer_size * sizeof(char_type)));
 			this->_buf_get = this->_buf_beg;
@@ -71,63 +71,63 @@ namespace libgpsfile2::utils {
 		}
 
 		~IobufBase (void) {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			if (this->_buf_beg != NULL) std::free (this->_buf_beg);
 		}
 
 		std::streamsize getNumPut (void) const {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_base_num_buffer + (this->_buf_put - this->_buf_beg);
 		}
 
 		std::streamsize getNumGet (void) const {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_base_num_buffer + (this->_buf_get - this->_buf_beg);
 		}
 
 		const _CharT* getBuffer (void) const {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_buf_get;
 		}
 
 		void consumeAllGet (void) {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			// consume the full `actual buffer` by moving point 2 to point 3.
 			this->_buf_get = this->_buf_put;
 		}
 
 		std::streamsize getTotalSize (void) const {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_buf_end - this->_buf_beg;
 		}
 
 		std::streamsize getConsumed (void) const {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_buf_get - this->_buf_beg;
 		}
 
 		std::streamsize getReserved (void) const {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_buf_end - this->_buf_put;
 		}
 
 		void consumeGet (const std::streamsize& n) {
-			DEBUG_MSG ("IobufBase::%s (%ld)\n", __func__, n);
+			DEBUG_MSG ("IobufBase::{:s} ({:d})\n", __func__, n);
 			// Consume `n` elements of the `actual buffer`
 			this->_buf_get += std::min (n, this->_buf_put - this->_buf_get);
 		}
 
 		void printDebug (void) const {
 #ifdef _DEBUG
-			gpsdata::utils::Logger::Log (gpsdata::utils::Logger::DEBUG, __FILE__, __func__, __LINE__, "--- in buffer ---\n");
-			DEBUG_MSG("begin:   %p\n", this->_buf_beg);
-			DEBUG_MSG("current: %p\n", this->_buf_get);
-			DEBUG_MSG("end:     %p\n", this->_buf_put);
-			gpsdata::utils::Logger::Log (gpsdata::utils::Logger::DEBUG, __FILE__, __func__, __LINE__, "--- out buffer ---\n");
-			DEBUG_MSG("begin:   %p\n", this->_buf_get);
-			DEBUG_MSG("current: %p\n", this->_buf_put);
-			DEBUG_MSG("end:     %p\n", this->_buf_end);
-			DEBUG_MSG("bytes shifted: %ld\n", this->_base_num_buffer);
+			cpplogger::Logger::get() (cpplogger::Level::DEBUG, "--- in buffer ---\n");
+			DEBUG_MSG ("begin:   {:p}\n", fmt::ptr (this->_buf_beg));
+			DEBUG_MSG ("current: {:p}\n", fmt::ptr (this->_buf_get));
+			DEBUG_MSG ("end:     {:p}\n", fmt::ptr (this->_buf_put));
+			cpplogger::Logger::get() (cpplogger::Level::DEBUG, "--- out buffer ---\n");
+			DEBUG_MSG ("begin:   {:p}\n", fmt::ptr (this->_buf_get));
+			DEBUG_MSG ("current: {:p}\n", fmt::ptr (this->_buf_put));
+			DEBUG_MSG ("end:     {:p}\n", fmt::ptr (this->_buf_end));
+			DEBUG_MSG ("bytes shifted: {:d}\n", this->_base_num_buffer);
 #endif
 			return;
 		}
@@ -142,7 +142,7 @@ namespace libgpsfile2::utils {
 		 *  is equal to the output sequence.</em> [27.7.1.2]/1
 		 */
 		__string_type str (void) const {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return __string_type (this->_buf_get, this->_buf_put);
 		}
 
@@ -154,7 +154,7 @@ namespace libgpsfile2::utils {
 		 *  use as a new one.
 		 */
 		void str (const __string_type& __s) {
-			DEBUG_MSG ("IobufBase::%s (%s)\n", __func__, __s.c_str ());
+			DEBUG_MSG ("IobufBase::{:s} ({:p})\n", __func__, fmt::ptr (__s.data ()));
 			size_t len = __s.size ();
 			const char_type *ptr = __s.data ();
 
@@ -187,7 +187,7 @@ namespace libgpsfile2::utils {
 		 *  @note  Base class version does nothing, returns @c this.
 		 */
 		std::basic_streambuf<char_type,_Traits> *setbuf (char_type *b, std::streamsize s) override {
-			DEBUG_MSG ("IobufBase::%s (%p, %ld)\n", __func__, b, s);
+			DEBUG_MSG ("IobufBase::{:s} ({:p}, {:d})\n", __func__, fmt::ptr (b), s);
 			return this;
 		}
 
@@ -199,7 +199,7 @@ namespace libgpsfile2::utils {
 		 *         that represents an invalid stream position.
 		 */
 		pos_type seekoff (off_type offset, std::ios_base::seekdir type, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out) override {
-			DEBUG_MSG ("IobufBase::%s (%ld, %d, %d)\n", __func__, offset, type, mode);
+			DEBUG_MSG ("IobufBase::{:s} ({:d}, {:d}, {:d})\n", __func__, offset, type, mode);
 
 			if (type != std::ios_base::cur)
 				return pos_type(off_type(-1));
@@ -228,7 +228,7 @@ namespace libgpsfile2::utils {
 		 *         that represents an invalid stream position.
 		 */
 		pos_type seekpos(pos_type pos, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out) override {
-			DEBUG_MSG ("IobufBase::%s (%ld, %d)\n", __func__, pos, mode);
+			DEBUG_MSG ("IobufBase::{:s} ({:d}, {:d})\n", __func__, pos, mode);
 
 			if (mode == std::ios_base::in)
 				return this->seekoff (pos - off_type(this->_buf_get - this->_buf_beg), std::ios_base::cur, mode);
@@ -247,7 +247,7 @@ namespace libgpsfile2::utils {
 		 *  @note  Base class version does nothing, returns zero.
 		 */
 		int sync (void) override {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return 0;
 		}
 
@@ -272,7 +272,7 @@ namespace libgpsfile2::utils {
 		 *         @b es-how-many-see, not @b show-manic.</em>
 		 */
 		std::streamsize showmanyc (void) override {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			// For this method compare to current out buffer pointer (pptr()) with the current in in buffer pointer.
 			// It is not guaranteed that the the in-buffer end pointer is always up-to-date (in_avail()) is not (always) accurate.
 			return this->_buf_put - this->_buf_get;
@@ -293,7 +293,7 @@ namespace libgpsfile2::utils {
 		 *  implementation by overriding this definition.
 		 */
 		std::streamsize xsgetn (char_type* __s, const std::streamsize __n) override {
-			DEBUG_MSG ("IobufBase::%s (%p, %ld)\n", __func__, __s, __n);
+			DEBUG_MSG ("IobufBase::{:s} ({:p}, {:d})\n", __func__, fmt::ptr (__s), __n);
 
 			const std::streamsize ret = std::min (__n, this->_buf_put - this->_buf_get);
 			std::memcpy (__s, this->_buf_get, ret);
@@ -321,7 +321,7 @@ namespace libgpsfile2::utils {
 		 *  @note  Base class version does nothing, returns eof().
 		 */
 		int_type underflow (void) override {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 
 			// If `actual buffer` is zero length, the buffer is empty.
 			if (this->_buf_get == this->_buf_put) return traits_type::eof ();
@@ -329,7 +329,7 @@ namespace libgpsfile2::utils {
 		}
 
 		int_type uflow (void) override {
-			DEBUG_MSG ("IobufBase::%s ()\n", __func__);
+			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 
 			// If `actual buffer` is zero length, the buffer is empty.
 			if (this->_buf_get == this->_buf_put) return traits_type::eof ();
@@ -347,7 +347,7 @@ namespace libgpsfile2::utils {
 		 *  @note  Base class version does nothing, returns eof().
 		 */
 		int_type pbackfail (const int_type __c  = traits_type::eof ()) override {
-			DEBUG_MSG ("IobufBase::%s (%d)\n", __func__, __c);
+			DEBUG_MSG ("IobufBase::{:s} ({:d})\n", __func__, __c);
 			if (this->_buf_get > this->_buf_beg) {
 				--this->_buf_get;
 				if (__c != traits_type::eof ())
@@ -372,7 +372,7 @@ namespace libgpsfile2::utils {
 		 *  implementation by overriding this definition.
 		 */
 		std::streamsize xsputn (const char_type* __s, const std::streamsize __n) override {
-			DEBUG_MSG ("IobufBase::%s (%p, %ld)\n", __func__, __s, __n);
+			DEBUG_MSG ("IobufBase::{:s} ({:p}, {:d})\n", __func__, fmt::ptr (__s), __n);
 
 			std::streamsize len = __n;
 			while (len > this->_buf_end - this->_buf_put) {
@@ -411,7 +411,7 @@ namespace libgpsfile2::utils {
 		 *  @note  Base class version does nothing, returns eof().
 		 */
 		int_type overflow (const int_type __c = traits_type::eof ()) override {
-			DEBUG_MSG ("IobufBase::%s (%d)\n", __func__, __c);
+			DEBUG_MSG ("IobufBase::{:s} ({:d})\n", __func__, __c);
 
 			// Check if this is a real overflow, or if function was called for convenience.
 			if (this->_buf_put == this->_buf_end) {

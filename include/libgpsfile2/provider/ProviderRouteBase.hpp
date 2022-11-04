@@ -15,7 +15,6 @@ namespace libgpsfile2::provider::internal {
 		protected:
 			constexpr static const auto _type_map = std::to_array<const std::string_view>({
 				"id", //Id number of this element.
-				"timezone", //Timezone of this element.
 				//https://www8.garmin.com/xmlschemas/TrackPointExtensionv1.xsd
 				//https://www8.garmin.com/xmlschemas/GpxExtensionsv3.xsd
 				// types from: http://www.cluetrust.com/XML/GPXDATA/1/0
@@ -94,7 +93,6 @@ namespace libgpsfile2::provider::internal {
 		constexpr static const RouteData TYPE_NO_TYPE = -1;
 
 		constexpr static const RouteData TYPE_ID = base::ProviderRouteBase::getType ("id");
-		constexpr static const RouteData TYPE_TIMEZONE = base::ProviderRouteBase::getType ("timezone");
 
 		constexpr static const RouteData TYPE_HEARTRATE = base::ProviderRouteBase::getType ("heartrate");
 		constexpr static const RouteData TYPE_CADENCE = base::ProviderRouteBase::getType ("cadence");

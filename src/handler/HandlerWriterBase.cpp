@@ -1,5 +1,4 @@
 #include "config.h"
-#include <features.h>
 
 #include "libgpsfile2/handler/HandlerWriterBase.hpp"
 
@@ -9,17 +8,17 @@
 #include <fstream>
 #include <string>
 #include <stdexcept>
-#include <gpsdata/utils/Logger.hpp>
+#include <Logger.hpp>
 
 using libgpsfile2::handler::HandlerWriterBase;
 
 HandlerWriterBase::~HandlerWriterBase (void) {
-	DEBUG_MSG("HandlerWriterBase::%s ()\n", __func__);
+	DEBUG_MSG ("HandlerWriterBase::{:s} ()\n", __func__);
 	delete this->_s;
 }
 
 std::size_t HandlerWriterBase::streamWrite (const char *buf, const std::size_t& s, const off_t& o) {
-	DEBUG_MSG("HandlerWriterBase::%s (%p, %ld, %ld)\n", __func__, buf, s, o);
+	DEBUG_MSG ("HandlerWriterBase::{:s} ({:p}, {:d}, {:d})\n", __func__, buf, s, o);
 	if (this->_write_finished) return 0;
 	std::streambuf *sbuf = this->_s->rdbuf ();
 	std::size_t n_put = sbuf->sputn (buf, s);
@@ -30,14 +29,14 @@ std::size_t HandlerWriterBase::streamWrite (const char *buf, const std::size_t& 
 }
 
 bool HandlerWriterBase::release (void) {
-	DEBUG_MSG("HandlerWriterBase::%s ()\n", __func__);
+	DEBUG_MSG ("HandlerWriterBase::{:s} ()\n", __func__);
 	this->_write_finished = true;
 	if (!this->write (this->_s, this->_write_finished)) throw std::runtime_error ("Can not set value on object.");
 	return true;
 }
 
 bool HandlerWriterBase::readFile (const std::string& file) {
-	DEBUG_MSG("HandlerWriterBase::%s (%s)\n", __func__, file.c_str ());
+	DEBUG_MSG ("HandlerWriterBase::{:s} ({:s})\n", __func__, file);
 
 	if (this->_write_finished) return false;
 
@@ -57,7 +56,7 @@ bool HandlerWriterBase::readFile (const std::string& file) {
 			{
 				std::streamsize size = input_stream.gcount ();
 				size_total += size;
-				DEBUG_MSG("read %d bytes in buffer, total read: %d\n", size, size_total);
+				DEBUG_2_MSG (1, "read {:d} bytes in buffer, total read: {:d}\n", size, size_total);
 				this->streamWrite (buffer.data (), size, 0);
 			}
 		}

@@ -280,10 +280,6 @@ namespace libgpsfile2::provider {
 					case 5: { // details
 						res = r->getDetails ();
 						break; }
-					case 6: { // timezone
-						const auto& offset = r->getTimezoneOffset ();
-						gpsdata::utils::Convert::convertValue (res, offset, true);
-						break; }
 					default:
 						break;
 				}
@@ -372,8 +368,6 @@ namespace libgpsfile2::provider {
 						return ProviderRouteBase::TYPE_COMMENT;
 					case 5: // details
 						return ProviderRouteBase::TYPE_DESCRIPTION;
-					case 6: // timezone
-						return ProviderRouteBase::TYPE_TIMEZONE;
 					default:
 						return ProviderRouteBase::TYPE_NO_TYPE;
 				}

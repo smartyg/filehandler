@@ -1,5 +1,4 @@
 #include "config.h"
-#include <features.h>
 
 #include "libgpsfile2/GpsfileManager.hpp"
 
@@ -8,7 +7,7 @@
 #include <string>
 #include <utility>
 #include <stdexcept>
-#include <gpsdata/utils/Logger.hpp>
+#include <Logger.hpp>
 
 #include "./handler/HandlerPlainReader.hpp"
 #include "./handler/HandlerPlainWriter.hpp"
@@ -19,7 +18,7 @@ using libgpsfile2::types::HandlerCreatorFunc;
 using libgpsfile2::types::PluginCreatorFunc;
 
 GpsfileManager::GpsfileManager (void) {
-	DEBUG_MSG("GpsfileManager::%s ()\n", __func__);
+	DEBUG_MSG ("GpsfileManager::{:s} ()\n", __func__);
 
 	HandlerCreatorFunc plain_reader = [] (std::unique_ptr<provider::ProviderBase> provider_base, const std::string& path) -> std::unique_ptr<handler::HandlerBase> {
 		std::unique_ptr<provider::ProviderReaderBase> provider = utils::dynamic_unique_ptr_cast<provider::ProviderReaderBase>(std::move (provider_base));
@@ -37,18 +36,51 @@ GpsfileManager::GpsfileManager (void) {
 }
 
 GpsfileManager::~GpsfileManager (void) {
-	DEBUG_MSG("GpsfileManager::%s ()\n", __func__);
+	DEBUG_MSG ("GpsfileManager::{:s} ()\n", __func__);
+	this->_provider_type_extension_map.clear ();
+	this->_extension_provider_type_map.clear ();
+	this->_handler_map.clear ();
 }
 
 const std::shared_ptr<GpsfileManager> GpsfileManager::getPtr (void) {
-	DEBUG_MSG("GpsfileManager::%s ()\n", __func__);
+	DEBUG_MSG ("GpsfileManager::{:s} ()\n", __func__);
 	static std::shared_ptr<GpsfileManager> instance = std::shared_ptr<GpsfileManager>(new GpsfileManager ());
 
 	return instance;
 }
 
+void GpsfileManager::print (void) const {
+	DEBUG_MSG ("GpsfileManager::{:s} ()\n", __func__);
+
+	cpplogger::Logger::get () (cpplogger::Level::NOTICE, "Content of extension-provider-map:\n");
+	for (const auto& [ext, types] : this->_extension_provider_type_map) {
+		std::string ext_str;
+		if (ext.empty ()) ext_str = "PlainHandler";
+		else ext_str = ext;
+		NOTICE_MSG ("  {:s}:\n", ext_str);
+		for (const std::size_t& type : types) {
+			const KeyType key = std::make_pair (ext, type);
+			const HandlerCreatorFunc& func = this->_handler_map.at (key);
+			NOTICE_MSG ("  - {:d}: {:p}\n", type, fmt::ptr (&func));
+		}
+	}
+
+	cpplogger::Logger::get () (cpplogger::Level::NOTICE, "Content of provider-extension-map:\n");
+	for (const auto& [type, exts] : this->_provider_type_extension_map) {
+		NOTICE_MSG ("  {:d}:\n", type);
+		for (const std::string& ext : exts) {
+			const KeyType key = std::make_pair (ext, type);
+			const HandlerCreatorFunc& func = this->_handler_map.at (key);
+			std::string ext_str;
+			if (ext.empty ()) ext_str = "PlainHandler";
+			else ext_str = ext;
+			NOTICE_MSG ("  - {:s}: {:p}\n", ext_str, fmt::ptr (&func));
+		}
+	}
+}
+
 void GpsfileManager::addPlugin (const std::string& extension, const std::size_t& provider_type, HandlerCreatorFunc func) {
-	DEBUG_MSG("GpsfileManager::%s (%s, %ld, %p)\n", __func__, extension.c_str (), provider_type, func);
+	DEBUG_MSG ("GpsfileManager::{:s} ({:s}, {:d}, {:p})\n", __func__, extension, provider_type, fmt::ptr (&func));
 	GpsfileManager::KeyType key = std::make_pair (extension, provider_type);
 	this->_handler_map.insert (std::make_pair (key, func));
 	this->_provider_type_extension_map[provider_type].push_back (extension);
@@ -56,7 +88,7 @@ void GpsfileManager::addPlugin (const std::string& extension, const std::size_t&
 }
 
 void GpsfileManager::registar (const char* id, void* data_pointer) {
-	DEBUG_MSG("GpsfileManager::%s (%s, %p)\n", __func__, id, data_pointer);
+	DEBUG_MSG ("GpsfileManager::{:s} ({:s}, {:p})\n", __func__, id, data_pointer);
 	(void)id;
 
 	const types::PluginDetails* ptr = static_cast<types::PluginDetails*>(data_pointer);
@@ -65,15 +97,30 @@ void GpsfileManager::registar (const char* id, void* data_pointer) {
 	}
 }
 void GpsfileManager::deregistar (const char* id) {
-	DEBUG_MSG("GpsfileManager::%s (%s)\n", __func__, id);
-	(void)id;
-	/*
-	 * try {
-	 *	const std::string extension (id);
-	 *	const auto handlers = this->_extension_provider_type_map.at (extension);
-	 *	for (const auto& provider_type : handlers) {
-	 *		const KeyType key = std::make_pair (extension, provider_type);
-	 *		this->_handler_map.erase (key);
-}
-this->_extension_provider_type_map.erase (extension);*/
+	DEBUG_MSG ("GpsfileManager::{:s} ({:s})\n", __func__, id);
+
+	try {
+		const std::string extension (id);
+		const auto handlers = this->_extension_provider_type_map.at (extension);
+		for (const auto& provider_type : handlers) {
+			DEBUG_2_MSG (2, "type {:d} is (also) related to {:s}\n", provider_type, extension);
+			const KeyType key = std::make_pair (extension, provider_type);
+			try {
+				DEBUG_2_MSG (2, "try to remove handler associated with key {{{:s}, {:d}}}\n", extension, provider_type);
+				this->_handler_map.erase (key);
+			} catch (std::exception& e) {
+				EXCEPTION_INFO_MSG (e);
+			}
+
+			try {
+				DEBUG_2_MSG (2, "try to remove {:s} from provider-type-map\n", extension);
+				std::erase_if (this->_provider_type_extension_map.at (provider_type), [&extension] (const std::string& str) { return (!str.empty () && str.compare (extension)); });
+			} catch (std::exception& e) {
+				EXCEPTION_INFO_MSG (e);
+			}
+		}
+		this->_extension_provider_type_map.erase (extension);
+	} catch (std::exception& e) {
+		EXCEPTION_INFO_MSG (e);
+	}
 }

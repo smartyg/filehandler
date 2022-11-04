@@ -10,6 +10,7 @@
 #include <utility>
 #include <type_traits>
 #include <algorithm>
+#include <Logger.hpp>
 
 #include <libgpsfile2/types/HandlerCreatorFunc.hpp>
 #include <libgpsfile2/types/PluginCreatorFunc.hpp>
@@ -45,32 +46,36 @@ namespace libgpsfile2 {
 		template <provider::ProviderReaderAbstractTrait ProviderBaseType, provider::ProviderReaderFinalTrait Provider>
 		[[nodiscard]] std::unique_ptr<handler::HandlerReaderBase> createReader (std::unique_ptr<Provider> provider, const std::string& path, const std::string& extension) const {
 			static_assert (std::is_base_of<ProviderBaseType, Provider>::value);
-			DEBUG_MSG("GpsfileManager::%s (%p, %s, %s)\n", __func__, provider.get(), path.c_str (), extension.c_str ());
+			DEBUG_MSG ("GpsfileManager::{:s} ({:p}, {:s}, {:s})\n", __func__, fmt::ptr (provider), path, extension);
 			KeyType key = std::make_pair (extension, GpsfileManager::getProviderType<ProviderBaseType>());
-			DEBUG_MSG("GpsfileManager::%s: key {%s, %ld}\n", __func__, key.first.c_str (), key.second);
+			DEBUG_2_MSG (1, "GpsfileManager::{:s}: key {{{:s}, {:d}}}\n", __func__, key.first, key.second);
 			try {
 				HandlerCreatorFunc func = this->_handler_map.at (key);
 				std::unique_ptr<handler::HandlerBase> handler_base = func (std::move (provider), path);
 				return utils::dynamic_unique_ptr_cast<handler::HandlerReaderBase>(std::move (handler_base));
 			} catch (std::exception& e) {
-				DEBUG_MSG("GpsfileManager::%s: %s\n", __func__, e.what ());
-				(void)e; }
+				EXCEPTION_INFO_MSG (e);
+			}
 			return {};
 		}
 
 		template <provider::ProviderWriterAbstractTrait ProviderBaseType, provider::ProviderWriterFinalTrait Provider>
 		[[nodiscard]] std::unique_ptr<handler::HandlerWriterBase> createWriter (std::unique_ptr<Provider> provider, const std::string& path, const std::string& extension) const {
 			static_assert (std::is_base_of<ProviderBaseType, Provider>::value);
-			DEBUG_MSG("GpsfileManager::%s (%p, %s, %s)\n", __func__, provider.get(), path.c_str (), extension.c_str ());
+			DEBUG_MSG ("GpsfileManager::{:s} ({:p}, {:s}, {:s})\n", __func__, fmt::ptr (provider), path, extension);
 			KeyType key = std::make_pair (extension, GpsfileManager::getProviderType<ProviderBaseType>());
-			DEBUG_MSG("GpsfileManager::%s: key {%s, %ld}\n", __func__, key.first.c_str (), key.second);
+			DEBUG_2_MSG (1, "GpsfileManager::{:s}: key {{{:s}, {:d}}}\n", __func__, key.first, key.second);
 			try {
 				HandlerCreatorFunc func = this->_handler_map.at (key);
 				std::unique_ptr<handler::HandlerBase> handler_base = func (std::move (provider), path);
 				return utils::dynamic_unique_ptr_cast<handler::HandlerWriterBase>(std::move (handler_base));
-			} catch (std::exception& e) { (void)e; }
+			} catch (std::exception& e) {
+				EXCEPTION_INFO_MSG (e);
+			}
 			return {};
 		}
+
+		void print (void) const;
 
 		void addPlugin (const std::string& extension, const std::size_t& provider_type, HandlerCreatorFunc func);
 		void registar (const char* id, void* data_pointer);

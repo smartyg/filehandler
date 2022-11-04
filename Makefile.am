@@ -59,7 +59,7 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgpsfile2.pc libgpsfile2-providergpsroute.pc
 
 lib_LTLIBRARIES = libgpsfile2.la
-libgpsfile2_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@ @PLUGINMANAGER_CFLAGS@
+libgpsfile2_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @PLUGINFRAMEWORK_CFLAGS@ @CPPLOGGER_CFLAGS@
 
 ## Define the source file list for the "libexample-@EXAMPLE_API_VERSION@.la"
 ## target.  Note that @EXAMPLE_API_VERSION@ is not interpreted by Automake and
@@ -75,7 +75,7 @@ libgpsfile2_la_SOURCES = src/GpsfileManager.cpp \
 	src/handler/HandlerWriterBase.cpp \
 	src/utils/Iobuf.cpp
 
-libgpsfile2_la_LIBADD = @GPSDATA_UTILS_LIBS@ @PLUGINMANAGER_LIBS@
+libgpsfile2_la_LIBADD = @PLUGINFRAMEWORK_LIBS@ @CPPLOGGER_LIBS@
 
 ## Instruct libtool to include ABI version information in the generated shared
 ## library file (.so).  The library ABI version is defined in configure.ac, so
@@ -130,7 +130,7 @@ libgpsfile2_sub_provider_include_HEADERS = include/libgpsfile2/provider/Provider
 
 lib_LTLIBRARIES += libgpsfile2-providergpsroute.la
 libgpsfile2_providergpsroute_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@
-
+libgpsfile2_providergpsroute_la_LIBADD = @GPSDATA_LIBS@
 ## Define the source file list for the "libexample-@EXAMPLE_API_VERSION@.la"
 ## target.  Note that @EXAMPLE_API_VERSION@ is not interpreted by Automake and
 ## will therefore be treated as if it were literally part of the target name,
@@ -174,7 +174,7 @@ libgpsfile2_sub_provider_impl_include_HEADERS = include/libgpsfile2/provider/imp
 pkglib_LTLIBRARIES = gpx.la
 gpx_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" @GPX_CFLAGS@ @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 gpx_la_LDFLAGS = -module -avoid-version -shared
-gpx_la_LIBADD = @GPX_LIBS@
+gpx_la_LIBADD = @GPX_LIBS@ @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@
 gpx_la_SOURCES = plugins/gpx/plugin.cpp \
 	plugins/gpx/gpxplugin.cpp \
 	plugins/gpx/gpxreader.cpp \
