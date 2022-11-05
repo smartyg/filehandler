@@ -21,7 +21,9 @@ using GpsSegmentType = gpsdata::GpsSegment<GpsFactoryType, GpsPointType>;
 using GpsRouteType = gpsdata::GpsRoute<GpsFactoryType, GpsSegmentType>;
 
 int main (void) {
+	cpplogger::Logger::setFile ("./write_gpx.log");
 	cpplogger::Logger::setLoglevel (cpplogger::Level::DEBUG + 5);
+
 	// load gpsfile plugin
 	const auto plugin = GpsfileManager::getPtr ();
 

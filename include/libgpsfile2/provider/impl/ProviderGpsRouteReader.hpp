@@ -191,7 +191,7 @@ namespace libgpsfile2::provider {
 			for (const auto& route : this->_routes) {
 				const Factory* factory = route->getFactory ().get ();
 				std::map<DataType, uint8_t> map;
-				for (auto it = ProviderGpsRouteReader::_type_pais.cbegin (); it != ProviderGpsRouteReader::_type_pais.cend (); ++it) {
+				for (auto it = ProviderGpsRouteReader::_type_pairs.cbegin (); it != ProviderGpsRouteReader::_type_pairs.cend (); ++it) {
 					map[factory->getDataType ((*it).second)] = ProviderRouteBase::getType ((*it).first);
 				}
 				this->_convertionMap.push_back (map);
@@ -261,15 +261,14 @@ namespace libgpsfile2::provider {
 				switch (n) {
 					case 0: { // id
 						const gpsdata::ObjectId& id = r->getId ();
-						gpsdata::utils::Convert::convertValue (res, id, true);
+						gpsdata::utils::Convert::convertValue (res, id.getId (), true);
 						break; }
 					case 1: { // time
 						const gpsdata::ObjectTime& time = r->getTime ();
 						gpsdata::utils::Convert::convertValue (res, time, true);
 						break; }
 					case 2: { // activity type
-						const ActivityType& activity = r->getActivityType ();
-						gpsdata::utils::Convert::convertValue (res, activity, true);
+						res = r->getFactory ()->getActivityTypeString (r->getActivityType ());
 						break; }
 					case 3: { // title
 						res = r->getTitle ();
@@ -338,8 +337,11 @@ namespace libgpsfile2::provider {
 					 if (this->getFactory (route)->getValue (value, str, true)) {
 						if (value.type == this->getFactory (route)->getDataType ("LAT") ||
 							value.type == this->getFactory (route)->getDataType ("LON")) {
-							internal::StringPadLeft (str, '0', 8);
+							internal::StringPadLeft (str, '0', 9);
 							internal::stringinsertChar (str, '.', -8);
+						} else if (value.type == this->getFactory (route)->getDataType ("ALT")) {
+							internal::StringPadLeft (str, '0', 4);
+							internal::stringinsertChar (str, '.', -3);
 						}
 						return str;
 					}
@@ -361,7 +363,7 @@ namespace libgpsfile2::provider {
 					case 1: // time
 						return ProviderRouteBase::TYPE_TIME;
 					case 2: // activity type
-						return ProviderRouteBase::TYPE_SPORT;
+						return ProviderRouteBase::TYPE_TYPE;
 					case 3: // title
 						return ProviderRouteBase::TYPE_NAME;
 					case 4: // summary

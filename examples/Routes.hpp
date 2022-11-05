@@ -37,6 +37,7 @@ std::shared_ptr<R> create_route_1 (const std::shared_ptr<typename R::GpsFactory>
 	route->addPointData (0, t2, "LAT", 489306200, true);
 	route->addPointData (0, t2, "LON", 5237267200, true);
 
+	route->addPointData (0, t2, "ALT", 2000, true);
 	route->addPointData (0, t2, "SPEED", 20, true);
 	route->addPointData (0, t2, "CADENCE", 90, true);
 
@@ -46,6 +47,7 @@ std::shared_ptr<R> create_route_1 (const std::shared_ptr<typename R::GpsFactory>
 	route->addPointData (0, t3, "LAT", 489185600, true);
 	route->addPointData (0, t3, "LON", 5237317800, true);
 
+	route->addPointData (0, t3, "ALT", 0, true);
 	route->addPointData (0, t3, "CADENCE", 101, true);
 
 	gpsdata::ObjectTime t4 = t3 + step;
@@ -54,11 +56,15 @@ std::shared_ptr<R> create_route_1 (const std::shared_ptr<typename R::GpsFactory>
 	route->addPointData (0, t4, "LAT", 488388500, true);
 	route->addPointData (0, t4, "LON", 5237522600, true);
 
+	route->addPointData (0, t4, "ALT", 500, true);
+
 	gpsdata::ObjectTime t5 = t4 + step;
 	// Vondel Park entrance, Amsterdam, the Netherlands
 	// 52.361735, 4.881794
 	route->addPointData (0, t5, "LAT", 488179400, true);
 	route->addPointData (0, t5, "LON", 5236173500, true);
+
+	route->addPointData (0, t5, "ALT", -1000, true);
 
 	gpsdata::ObjectTime t6 = t5 + step;
 	// Van Gogh Museum, Amsterdam, the Netherlands
@@ -66,11 +72,15 @@ std::shared_ptr<R> create_route_1 (const std::shared_ptr<typename R::GpsFactory>
 	route->addPointData (0, t6, "LAT", 488094800, true);
 	route->addPointData (0, t6, "LON", 5235852000, true);
 
+	route->addPointData (0, t6, "ALT", 0, true);
+
 	gpsdata::ObjectTime t7 = t6 + step;
 	// Rijksmuseum, Amsterdam, the Netherlands
 	// 52.360272, 4.885635
 	route->addPointData (0, t7, "LAT", 488563500, true);
 	route->addPointData (0, t7, "LON", 5236027200, true);
+
+	route->addPointData (0, t7, "ALT", -500, true);
 
 	gpsdata::ObjectTime t8 = t7 + step;
 	// Rembrandt House Museum, Amsterdam, the Netherlands
@@ -78,9 +88,11 @@ std::shared_ptr<R> create_route_1 (const std::shared_ptr<typename R::GpsFactory>
 	route->addPointData (0, t8, "LAT", 490131400, true);
 	route->addPointData (0, t8, "LON", 5236942300, true);
 
+	route->addPointData (0, t8, "ALT", 1500, true);
+
 	route->setTitle ("test ride");
 	route->setSummary ("long test ride");
-	route->setDetails ("A very nice ling test ride.");
+	route->setDetails ("A very nice long test ride.");
 	route->setActivityType ("CYCLING");
 
 	return route;

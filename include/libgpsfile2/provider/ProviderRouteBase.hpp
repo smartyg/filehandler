@@ -90,6 +90,11 @@ namespace libgpsfile2::provider::internal {
 			return -1;
 		}
 
+		constexpr static const std::string_view getTypeName (const RouteData& type) {
+			if (type < 0) return {};
+			else return ProviderRouteBase::_type_map[static_cast<decltype(ProviderRouteBase::_type_map)::size_type>(type)];
+		}
+
 		constexpr static const RouteData TYPE_NO_TYPE = -1;
 
 		constexpr static const RouteData TYPE_ID = base::ProviderRouteBase::getType ("id");

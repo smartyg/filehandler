@@ -67,13 +67,24 @@ void GpxReader::addExtension (gpx::Extensions* extensions, gpx::Report* report, 
 		}
 	}
 
+	if (name.empty ()) { // None of the used nor availible namespaces have a field to cover this type. Now just store this type as a non-namespace extension.
+		name = ProviderRouteBase::getTypeName (t);
+		prefix = {};
+	}
+
 	if (name.empty ()) return;
 
-	std::ostringstream full_name;
-	full_name << prefix << ":" << name << '\0';
+	std::string_view full_name;
+	if (prefix.size () > 0) {
+		std::ostringstream full_name_stream;
+		full_name_stream << prefix << ":" << name;
+		full_name = full_name_stream.view ();
+	} else {
+		full_name = name;
+	}
 
-	DEBUG_2_MSG (2, "add tag: {:s}; data: {:s}\n", full_name.view (), data);
-	extensions->add (full_name.view ().data (), gpx::Node::ELEMENT, report)->setValue (data);
+	DEBUG_2_MSG (2, "add tag: {:s}; data: {:s}\n", full_name, data);
+	extensions->add (std::string (full_name).c_str (), gpx::Node::ELEMENT, report)->setValue (data);
 }
 
 void GpxReader::loadRoutes (void) {
@@ -241,12 +252,12 @@ void GpxReader::loadRoutes (void) {
 
 	for (const auto& [name, uri, location] : this->_extension_namespaces) {
 		std::ostringstream ss_name;
-		ss_name << "xmlns:" << name << '\0';
-		this->_root->add (ss_name.view ().data (), gpx::Node::ATTRIBUTE)->setValue (std::move (std::string (uri)));
+		ss_name << "xmlns:" << name;
+		this->_root->add (std::string (ss_name.view ()).c_str (), gpx::Node::ATTRIBUTE)->setValue (std::move (std::string (uri)));
 		//this->_root->add ("xsi:schemaLocation", gpx::Node::ATTRIBUTE)
 		std::ostringstream ss_schema;
-		ss_schema << " " << uri << " " << location << '\0';
-		schema_location->appendValue (ss_schema.view ().data ());
+		ss_schema << " " << uri << " " << location;
+		schema_location->appendValue (std::string (ss_schema.view ()).c_str ());
 	}
 }
 

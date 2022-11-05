@@ -45,7 +45,7 @@ bool GpxWriter::write (std::istream *s, const bool& is_final) {
 	size_t l = sbuf->in_avail ();
 
 	bool res = this->_parser->parse (b, l, is_final);
-	if (!res) ERROR_MSG("Parsing of {:s} failed due to {:s} on line {:s} and column {:s}\n", this->getPath (), this->_parser->errorText (), this->_parser->errorLineNumber (), this->_parser->errorColumnNumber ());
+	if (!res) ERROR_MSG ("Parsing of {:s} failed due to {:s} on line {:d} and column {:d}\n", this->getPath (), this->_parser->errorText (), this->_parser->errorLineNumber (), this->_parser->errorColumnNumber ());
 
 	sbuf->consumeGet (l);
 

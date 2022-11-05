@@ -8,7 +8,7 @@ namespace libgpsfile2::provider::internal {
 
 	class ProviderGpsRouteBase {
 	protected:
-		constexpr static const auto _type_pais = std::to_array<const std::pair<const std::string_view, const std::string_view>> ({
+		constexpr static const auto _type_pairs = std::to_array<const std::pair<const std::string_view, const std::string_view>> ({
 			{ "heartrate", "HEARTRATE" },
 			{ "cadence", "CADENCE" },
 			{ "temperature", "TEMPERATURE" },

@@ -1,10 +1,14 @@
 #ifndef _X_GPSDATA_EXAMPLE_PRINTGPSROUTE_
 #define _X_GPSDATA_EXAMPLE_PRINTGPSROUTE_
 
+#include <Logger.hpp>
 #include <gpsdata/traits/GpsRoute.hpp>
 
 template<gpsdata::GpsRouteTrait R>
 void printGpsRoute (const std::shared_ptr<R>& route) {
+	const auto old_level = cpplogger::Logger::get().getLoglevel ();
+	if (old_level > cpplogger::Level::ERR)
+		cpplogger::Logger::setLoglevel (cpplogger::Level::ERR);
 	std::cout << "--- route: " << route->getTitle () << " (" << std::to_string (route->getId ()) << ") ---" << std::endl;
 	std::cout << " summery: " << route->getSummary () << std::endl;
 	std::cout << " details: " << route->getDetails () << std::endl;
@@ -38,6 +42,8 @@ void printGpsRoute (const std::shared_ptr<R>& route) {
 			}
 		}
 	}
+
+	cpplogger::Logger::setLoglevel (old_level);
 }
 
 #endif /* _X_GPSDATA_EXAMPLE_PRINTGPSROUTE_ */

@@ -49,7 +49,7 @@ namespace libgpsfile2::provider {
 	private:
 		inline void initCovertionTable (void) {
 			std::map<DataType, uint8_t> map;
-			for (auto it = ProviderGpsRouteWriter::_type_pais.cbegin (); it != ProviderGpsRouteWriter::_type_pais.cend (); ++it) {
+			for (auto it = ProviderGpsRouteWriter::_type_pairs.cbegin (); it != ProviderGpsRouteWriter::_type_pairs.cend (); ++it) {
 				this->_convertionMap[ProviderRouteBase::getType ((*it).first)] = this->_factory->getDataType ((*it).second);
 			}
 		}
@@ -108,7 +108,7 @@ namespace libgpsfile2::provider {
 					r->setId (id);
 					break;
 				}
-				case ProviderRouteBase::TYPE_SPORT:
+				case ProviderRouteBase::TYPE_TYPE:
 					r->setActivityType (data);
 					return true;
 				case ProviderRouteBase::TYPE_NAME:
@@ -156,15 +156,15 @@ namespace libgpsfile2::provider {
 					return false;
 				}
 				if (t == ProviderRouteBase::TYPE_LAT || t == ProviderRouteBase::TYPE_LON) {
-					double value;
+					long double value;
 					gpsdata::utils::Convert::convertValue (value, data, true);
-					value *= 100000000;
+					value *= 100000000; // multiply by 10⁸8 to store value inernally
 					return p->addData (t_gps, static_cast<int64_t>(value));
 				} else if (t == ProviderRouteBase::TYPE_ELE) {
-					int value;
+					long double value;
 					gpsdata::utils::Convert::convertValue (value, data, true);
-					value *= 1000;
-					return p->addData (t_gps, value);
+					value *= 1000; // multiply by 10⁸3 to store value inernally
+					return p->addData (t_gps, static_cast<int>(value));
 				} else
 					return p->addData (t_gps, data, true);
 			}
