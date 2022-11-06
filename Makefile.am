@@ -75,7 +75,7 @@ libgpsfile2_la_SOURCES = src/GpsfileManager.cpp \
 	src/handler/HandlerWriterBase.cpp \
 	src/utils/Iobuf.cpp
 
-libgpsfile2_la_LIBADD = @PLUGINFRAMEWORK_LIBS@ @CPPLOGGER_LIBS@
+libgpsfile2_la_LIBADD = @CPPLOGGER_LIBS@
 
 ## Instruct libtool to include ABI version information in the generated shared
 ## library file (.so).  The library ABI version is defined in configure.ac, so
@@ -129,8 +129,8 @@ libgpsfile2_sub_provider_include_HEADERS = include/libgpsfile2/provider/Provider
 	include/libgpsfile2/provider/ProviderRouteWriterBase.hpp
 
 lib_LTLIBRARIES += libgpsfile2-providergpsroute.la
-libgpsfile2_providergpsroute_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@
-libgpsfile2_providergpsroute_la_LIBADD = @GPSDATA_LIBS@
+libgpsfile2_providergpsroute_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
+libgpsfile2_providergpsroute_la_LIBADD = @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@
 ## Define the source file list for the "libexample-@EXAMPLE_API_VERSION@.la"
 ## target.  Note that @EXAMPLE_API_VERSION@ is not interpreted by Automake and
 ## will therefore be treated as if it were literally part of the target name,
@@ -172,9 +172,9 @@ libgpsfile2_sub_provider_impl_include_HEADERS = include/libgpsfile2/provider/imp
 # 	src/libsad/plugins/gps/gpswriter.hpp
 
 pkglib_LTLIBRARIES = gpx.la
-gpx_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" @GPX_CFLAGS@ @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
+gpx_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" @GPX_CFLAGS@ @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@ @PLUGINFRAMEWORK_CFLAGS@
 gpx_la_LDFLAGS = -module -avoid-version -shared
-gpx_la_LIBADD = @GPX_LIBS@ @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@
+gpx_la_LIBADD = @GPX_LIBS@ @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 gpx_la_SOURCES = plugins/gpx/plugin.cpp \
 	plugins/gpx/gpxplugin.cpp \
 	plugins/gpx/gpxreader.cpp \
@@ -193,27 +193,27 @@ noinst_HEADERS += plugins/gpx/gpxplugin.hpp \
 
 if EXAMPLE
 bin_PROGRAMS = read_gpx
-read_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la
+read_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 read_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
 read_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 read_gpx_SOURCES = examples/read_gpx.cpp
 
 bin_PROGRAMS += write_gpx
-write_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la
+write_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 write_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
 write_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 write_gpx_SOURCES = examples/write_gpx.cpp
 
 bin_PROGRAMS += read_and_write_gpx
-read_and_write_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la
+read_and_write_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 read_and_write_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
 read_and_write_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 read_and_write_gpx_SOURCES = examples/read_and_write_gpx.cpp
 
 bin_PROGRAMS += write_and_read_gpx
-write_and_read_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la
+write_and_read_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 write_and_read_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
-write_and_read_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
+write_and_read_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@ @PLUGINFRAMEWORK_CFLAGS@
 write_and_read_gpx_SOURCES = examples/write_and_read_gpx.cpp
 
 # bin_PROGRAMS += read_write_gpx

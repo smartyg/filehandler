@@ -40,7 +40,7 @@ int main (void) {
 	std::cout << "create writer handler\n";
 	// get handler
 	std::string path_writer = "/tmp/test.gpx";
-	std::unique_ptr<HandlerWriterBase> handler_writer = plugin->createWriter<ProviderRouteWriterBase> (std::move (provider_writer), path_writer, path_writer.substr (path_writer.size () - 4, 4));
+	std::unique_ptr<HandlerWriterBase> handler_writer = plugin->createWriter<ProviderRouteWriterBase> (std::move (provider_writer), path_writer, path_writer.substr (path_writer.size () - 3, 3));
 
 	if (!handler_writer) throw std::runtime_error ("data handler is empty");
 
@@ -63,7 +63,7 @@ int main (void) {
 	std::cout << "create reader handler\n";
 	// get handler
 	std::string path_reader = "/tmp/test-out.gpx";
-	std::unique_ptr<HandlerReaderBase> handler_reader = plugin->createReader<ProviderRouteReaderBase> (std::move (provider_reader), path_reader, path_reader.substr (path_reader.size () - 4, 4));
+	std::unique_ptr<HandlerReaderBase> handler_reader = plugin->createReader<ProviderRouteReaderBase> (std::move (provider_reader), path_reader, path_reader.substr (path_reader.size () - 3, 3));
 
 	if (!handler_reader) throw std::runtime_error ("data handler is empty");
 

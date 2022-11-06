@@ -31,8 +31,11 @@ BuildRequires:  gcc%{gcc_version}-c++
 BuildRequires:  fdupes
 BuildRequires:  gtest
 BuildRequires:  gmock
-BuildRequires:  gpsdata-devel
-BuildRequires:  gpxlib-devel
+BuildRequires:  pkgconfig(cpplogger) >= 0.1.0
+BuildRequires:  pkgconfig(pluginframework) >= 0.0.1
+BuildRequires:  pkgconfig(gpsdata) >= 0.0.3
+BuildRequires:  pkgconfig(libgpsdata-utils) >= 0.0.3
+BuildRequires:  pkgconfig(gpxlib)
 BuildRoot:      %{_tmppath}/%{name}-%{srcVersion}-build
 
 %description
