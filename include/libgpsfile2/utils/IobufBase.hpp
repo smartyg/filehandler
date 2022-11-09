@@ -7,6 +7,8 @@
 #include <string>
 #include <streambuf>
 #include <algorithm>
+#include <mutex>
+#include <shared_mutex>
 #include <stdexcept>
 #include <Logger.hpp>
 
@@ -59,8 +61,11 @@ namespace libgpsfile2::utils {
 		char_type* _buf_end;     ///< End of buffer area.
 		std::streamsize _base_num_buffer;
 
+		mutable std::shared_mutex _mutex;
+
 	public:
 		explicit IobufBase (const std::size_t& buffer_size = (1024 * 1024)) : std::basic_streambuf<_CharT, _Traits> () {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ({:d})\n", __func__, buffer_size);
 
 			this->_buf_beg = static_cast<char_type *>(std::malloc (buffer_size * sizeof(char_type)));
@@ -71,47 +76,56 @@ namespace libgpsfile2::utils {
 		}
 
 		~IobufBase (void) {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			if (this->_buf_beg != NULL) std::free (this->_buf_beg);
 		}
 
 		std::streamsize getNumPut (void) const {
+			std::shared_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_base_num_buffer + (this->_buf_put - this->_buf_beg);
 		}
 
 		std::streamsize getNumGet (void) const {
+			std::shared_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_base_num_buffer + (this->_buf_get - this->_buf_beg);
 		}
 
 		const _CharT* getBuffer (void) const {
+			std::shared_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_buf_get;
 		}
 
 		void consumeAllGet (void) {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			// consume the full `actual buffer` by moving point 2 to point 3.
 			this->_buf_get = this->_buf_put;
 		}
 
 		std::streamsize getTotalSize (void) const {
+			std::shared_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_buf_end - this->_buf_beg;
 		}
 
 		std::streamsize getConsumed (void) const {
+			std::shared_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_buf_get - this->_buf_beg;
 		}
 
 		std::streamsize getReserved (void) const {
+			std::shared_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return this->_buf_end - this->_buf_put;
 		}
 
 		void consumeGet (const std::streamsize& n) {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ({:d})\n", __func__, n);
 			// Consume `n` elements of the `actual buffer`
 			this->_buf_get += std::min (n, this->_buf_put - this->_buf_get);
@@ -119,6 +133,7 @@ namespace libgpsfile2::utils {
 
 		void printDebug (void) const {
 #ifdef _DEBUG
+			std::shared_lock lock (this->_mutex);
 			cpplogger::Logger::get() (cpplogger::Level::DEBUG, "--- in buffer ---\n");
 			DEBUG_MSG ("begin:   {:p}\n", fmt::ptr (this->_buf_beg));
 			DEBUG_MSG ("current: {:p}\n", fmt::ptr (this->_buf_get));
@@ -142,6 +157,7 @@ namespace libgpsfile2::utils {
 		 *  is equal to the output sequence.</em> [27.7.1.2]/1
 		 */
 		__string_type str (void) const {
+			std::shared_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			return __string_type (this->_buf_get, this->_buf_put);
 		}
@@ -154,6 +170,7 @@ namespace libgpsfile2::utils {
 		 *  use as a new one.
 		 */
 		void str (const __string_type& __s) {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ({:p})\n", __func__, fmt::ptr (__s.data ()));
 			size_t len = __s.size ();
 			const char_type *ptr = __s.data ();
@@ -163,7 +180,7 @@ namespace libgpsfile2::utils {
 
 			for (std::size_t i = 0; i < len; ++i) {
 				if (this->_buf_put == this->_buf_end) {
-					int_type c = this->overflow (ptr[i]);
+					int_type c = this->overflow_unprotected (ptr[i]);
 					if (static_cast<char_type>(c) != ptr[i]) throw std::runtime_error ("Can not allocate new memory for buffer");
 				} else {
 					this->_buf_get[i] = ptr[i];
@@ -187,6 +204,7 @@ namespace libgpsfile2::utils {
 		 *  @note  Base class version does nothing, returns @c this.
 		 */
 		std::basic_streambuf<char_type,_Traits> *setbuf (char_type *b, std::streamsize s) override {
+			std::shared_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ({:p}, {:d})\n", __func__, fmt::ptr (b), s);
 			return this;
 		}
@@ -199,6 +217,7 @@ namespace libgpsfile2::utils {
 		 *         that represents an invalid stream position.
 		 */
 		pos_type seekoff (off_type offset, std::ios_base::seekdir type, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out) override {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ({:d}, {:d}, {:d})\n", __func__, offset, type, mode);
 
 			if (type != std::ios_base::cur)
@@ -272,6 +291,7 @@ namespace libgpsfile2::utils {
 		 *         @b es-how-many-see, not @b show-manic.</em>
 		 */
 		std::streamsize showmanyc (void) override {
+			std::shared_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 			// For this method compare to current out buffer pointer (pptr()) with the current in in buffer pointer.
 			// It is not guaranteed that the the in-buffer end pointer is always up-to-date (in_avail()) is not (always) accurate.
@@ -293,6 +313,7 @@ namespace libgpsfile2::utils {
 		 *  implementation by overriding this definition.
 		 */
 		std::streamsize xsgetn (char_type* __s, const std::streamsize __n) override {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ({:p}, {:d})\n", __func__, fmt::ptr (__s), __n);
 
 			const std::streamsize ret = std::min (__n, this->_buf_put - this->_buf_get);
@@ -321,6 +342,7 @@ namespace libgpsfile2::utils {
 		 *  @note  Base class version does nothing, returns eof().
 		 */
 		int_type underflow (void) override {
+			std::shared_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 
 			// If `actual buffer` is zero length, the buffer is empty.
@@ -329,6 +351,7 @@ namespace libgpsfile2::utils {
 		}
 
 		int_type uflow (void) override {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ()\n", __func__);
 
 			// If `actual buffer` is zero length, the buffer is empty.
@@ -347,6 +370,7 @@ namespace libgpsfile2::utils {
 		 *  @note  Base class version does nothing, returns eof().
 		 */
 		int_type pbackfail (const int_type __c  = traits_type::eof ()) override {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ({:d})\n", __func__, __c);
 			if (this->_buf_get > this->_buf_beg) {
 				--this->_buf_get;
@@ -372,11 +396,12 @@ namespace libgpsfile2::utils {
 		 *  implementation by overriding this definition.
 		 */
 		std::streamsize xsputn (const char_type* __s, const std::streamsize __n) override {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ({:p}, {:d})\n", __func__, fmt::ptr (__s), __n);
 
 			std::streamsize len = __n;
 			while (len > this->_buf_end - this->_buf_put) {
-				if (int_type(__s[0]) != this->overflow (__s[0])) throw std::runtime_error ("Overflow returned the wrong character");
+				if (int_type(__s[0]) != this->overflow_unprotected (__s[0])) throw std::runtime_error ("Overflow returned the wrong character");
 				__s++;
 				len--;
 			}
@@ -411,8 +436,12 @@ namespace libgpsfile2::utils {
 		 *  @note  Base class version does nothing, returns eof().
 		 */
 		int_type overflow (const int_type __c = traits_type::eof ()) override {
+			std::unique_lock lock (this->_mutex);
 			DEBUG_MSG ("IobufBase::{:s} ({:d})\n", __func__, __c);
+			return this->overflow_unprotected (__c);
+		}
 
+		inline int_type overflow_unprotected (const int_type __c) {
 			// Check if this is a real overflow, or if function was called for convenience.
 			if (this->_buf_put == this->_buf_end) {
 				if (this->_buf_get > this->_buf_beg) {

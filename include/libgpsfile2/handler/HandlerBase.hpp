@@ -11,8 +11,7 @@ namespace libgpsfile2::handler {
 	// Base data handler class
 	class HandlerBase : public libgpsfile2::BasePlugin {
 	protected:
-		HandlerBase (const std::string& path) {
-			this->_path = path;
+		HandlerBase (const std::string& path) : _path (path) {
 			this->_buf = new libgpsfile2::utils::Iobuf ();
 		}
 
@@ -25,7 +24,7 @@ namespace libgpsfile2::handler {
 		std::streambuf *_buf;
 
 	private:
-		std::string _path;
+		const std::string _path;
 	};
 }
 

@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <istream>
+#include <atomic>
 #include <utility>
 
 #include <libgpsfile2/handler/HandlerBase.hpp>
@@ -14,14 +15,17 @@
 namespace libgpsfile2::handler {
 
 	class HandlerWriterBase : virtual public HandlerBase {
+		mutable std::shared_mutex _mutex;
+		std::istream *_s;
+		std::atomic<bool> _write_finished = false;
 
 	protected:
 		std::unique_ptr<libgpsfile2::provider::ProviderWriterBase> _dp;
 
 		HandlerWriterBase (std::unique_ptr<libgpsfile2::provider::ProviderWriterBase> dp, const std::string& path) : HandlerBase (path) {
+			std::unique_lock lock (this->_mutex);
 			this->_dp = std::move (dp);
 			this->_s = new std::istream (this->_buf);
-			this->_write_finished = false;
 		}
 
 	public:
@@ -34,11 +38,18 @@ namespace libgpsfile2::handler {
 		virtual bool readFile (const std::string& = {}) final;
 
 		template<libgpsfile2::provider::ProviderWriterTrait T>
-		std::unique_ptr<T> getProvider (void) {
+		const std::unique_ptr<T> getProvider (void) {
+			std::unique_lock lock (this->_mutex);
 			if (this->_write_finished)
 				return libgpsfile2::utils::dynamic_unique_ptr_cast<T> (std::move (this->_dp));
 			return std::unique_ptr<T>();
 		}
+
+		virtual std::istream* getStream (void) const final;
+		virtual bool isFinished (void) const final;
+
+		virtual void lock (void) final;
+		virtual void unlock (void) final;
 
 	protected:
 		/**
@@ -49,8 +60,6 @@ namespace libgpsfile2::handler {
 		virtual bool write (std::istream *stream, const bool& finished) = 0;
 
 	private:
-		std::istream *_s;
-		bool _write_finished;
 	};
 }
 
