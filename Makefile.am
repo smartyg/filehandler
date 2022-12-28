@@ -73,7 +73,8 @@ libgpsfile2_la_SOURCES = src/GpsfileManager.cpp \
 	src/handler/HandlerPlainWriter.cpp \
 	src/handler/HandlerReaderBase.cpp \
 	src/handler/HandlerWriterBase.cpp \
-	src/utils/Iobuf.cpp
+	src/utils/Iobuf.cpp \
+	src/utils/Strings.cpp
 
 libgpsfile2_la_LIBADD = @CPPLOGGER_LIBS@
 
@@ -105,6 +106,8 @@ libgpsfile2_sub_handler_include_HEADERS = include/libgpsfile2/handler/HandlerBas
 libgpsfile2_sub_utils_includedir = $(includedir)/libgpsfile2/utils
 libgpsfile2_sub_utils_include_HEADERS = include/libgpsfile2/utils/Iobuf.hpp \
 	include/libgpsfile2/utils/IobufBase.hpp \
+	include/libgpsfile2/utils/Strings.hpp \
+	include/libgpsfile2/utils/StringsBase.hpp \
 	include/libgpsfile2/utils/dynamic_unique_ptr_cast.hpp
 
 libgpsfile2_sub_types_includedir = $(includedir)/libgpsfile2/types
@@ -155,8 +158,7 @@ libgpsfile2_sub_provider_impl_includedir = $(includedir)/libgpsfile2/provider/im
 libgpsfile2_sub_provider_impl_include_HEADERS = include/libgpsfile2/provider/impl/ProviderGpsRoute.hpp \
 	include/libgpsfile2/provider/impl/ProviderGpsRouteBase.hpp \
 	include/libgpsfile2/provider/impl/ProviderGpsRouteReader.hpp \
-	include/libgpsfile2/provider/impl/ProviderGpsRouteWriter.hpp \
-	include/libgpsfile2/provider/impl/ProviderGpsRouteUtils.hpp
+	include/libgpsfile2/provider/impl/ProviderGpsRouteWriter.hpp
 
 
 # pkglib_LTLIBRARIES = gps.la

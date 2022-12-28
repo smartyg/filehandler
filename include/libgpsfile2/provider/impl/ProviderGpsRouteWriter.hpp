@@ -8,7 +8,6 @@
 #include <gpsdata/utils/PointDate.hpp>
 
 #include <libgpsfile2/provider/impl/ProviderGpsRouteBase.hpp>
-#include <libgpsfile2/provider/impl/ProviderGpsRouteUtils.hpp>
 #include <libgpsfile2/provider/ProviderRouteWriterBase.hpp>
 
 #define GPX_TIME_FORMATS { "%Y-%m-%dT%TZ" }

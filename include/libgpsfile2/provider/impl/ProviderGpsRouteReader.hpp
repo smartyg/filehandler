@@ -8,8 +8,8 @@
 #include <gpsdata/traits/GpsRoute.hpp>
 
 #include <libgpsfile2/provider/impl/ProviderGpsRouteBase.hpp>
-#include <libgpsfile2/provider/impl/ProviderGpsRouteUtils.hpp>
 #include <libgpsfile2/provider/ProviderRouteReaderBase.hpp>
+#include <libgpsfile2/utils/Strings.hpp>
 
 namespace libgpsfile2::provider {
 	template<gpsdata::GpsRouteTrait R>
@@ -320,7 +320,7 @@ namespace libgpsfile2::provider {
 				std::string res;
 				res.resize (25);
 				std::size_t len = strftime (res.data (), res.size (), "%Y-%m-%dT%H:%M:%S", &tm);
-				internal::StringPadLeft (msec, '0', 3);
+				libgpsfile2::utils::Strings::padLeft (msec, '0', 3);
 				res[len++] = '.';
 				res[len++] = msec[0];
 				res[len++] = msec[1];
@@ -337,11 +337,11 @@ namespace libgpsfile2::provider {
 					 if (this->getFactory (route)->getValue (value, str, true)) {
 						if (value.type == this->getFactory (route)->getDataType ("LAT") ||
 							value.type == this->getFactory (route)->getDataType ("LON")) {
-							internal::StringPadLeft (str, '0', 9);
-							internal::stringinsertChar (str, '.', -8);
+							libgpsfile2::utils::Strings::padLeft (str, '0', 9);
+							libgpsfile2::utils::Strings::insertChar (str, '.', -8);
 						} else if (value.type == this->getFactory (route)->getDataType ("ALT")) {
-							internal::StringPadLeft (str, '0', 4);
-							internal::stringinsertChar (str, '.', -3);
+							libgpsfile2::utils::Strings::padLeft (str, '0', 4);
+							libgpsfile2::utils::Strings::insertChar (str, '.', -3);
 						}
 						return str;
 					}
