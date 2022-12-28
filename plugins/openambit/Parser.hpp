@@ -97,6 +97,7 @@ class Parser final {
 public:
 	Parser (libgpsfile2::provider::ProviderRouteWriterBase* const provider, const OpenambitWriter* const writer, const std::shared_ptr<OpenambitPlugin> base) : _provider (provider), _writer (writer), _base (base) {
 		DEBUG_MSG ("Parser::{:s} ({:p}, {:p}, {:p})\n", __func__, fmt::ptr (provider), fmt::ptr (writer), fmt::ptr (base));
+		this->_prev_time = 0;
 	}
 
 	~Parser (void) {
