@@ -42,10 +42,24 @@ TEST(IostreamIobufTest, Write2)
 		<< "Although it keep hope that some day it will become usefull."
 		<< std::endl;
 
-	std::string str1 (6, 0);
-	s.get (str1.data (), 5);
+	// First extract one single charachter
+	EXPECT_EQ (s.get (), 'H');
 
-	EXPECT_STREQ (str1.c_str (), "Hello");
+	// Second, extract 6 (-1 = 5) charachters
+	std::string str1 (6, 0);
+	s.get (str1.data (), 6);
+	EXPECT_STREQ (str1.c_str (), "ello ");
+
+	// Third, try to extract 9 (-1 = 8) charachters, or till an '\n' is encountered.
+	std::string str2 (9, 0);
+	s.get (str1.data (), 9);
+	EXPECT_STREQ (str1.c_str (), "World!");
+
+	// This should contain the newline
+	EXPECT_EQ (s.get (), '\n');
+
+	// Finally extract the next charachter
+	EXPECT_EQ (s.get (), 'T');
 
 	delete buf;
 }
