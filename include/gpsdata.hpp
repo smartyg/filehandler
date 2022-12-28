@@ -1,1 +1,0 @@
-/mnt/projects/development/Sports-Analyzing-Database/src/gpsdata/include/gpsdata.hpp

@@ -1,0 +1,31 @@
+
+                     libgpsfile2 Library - version 0.0.0
+
+  What is it?
+  -----------
+
+  Package containing a plugin based system to read and write different gps file formats (enabled by different plugins). Internally it used the structures from gpsdata to store the gps data.
+
+  The Latest Version
+  ------------------
+
+  Details of the latest version can be found on the project page under
+  http://www.martijn-goedhart.nl/libgpsfile2/.
+
+  Documentation
+  -------------
+
+  This package includes a man page for detailed usage of this utility.
+  Furthermore more information cat be found at
+  http://www.martijn-goedhart.nl/libgpsfile2/
+
+  Installation
+  ------------
+
+  TODO
+
+  Licensing
+  ---------
+
+  This project is licensed under the GNU General Public License.
+  Please see the file called LICENSE for the full license text.

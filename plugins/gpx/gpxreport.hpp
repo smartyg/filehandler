@@ -16,7 +16,7 @@ public:
 	///
 	/// Constructor
 	///
-	GpxReport();
+	GpxReport (void);
 
 	///
 	/// Deconstructor
@@ -30,7 +30,7 @@ public:
 	/// @param  warning the warning
 	/// @param  extra   the extra information
 	///
-	virtual void report (const gpx::Node *node, gpx::Report::Warning warning, const std::string& extra);
+	void report (const gpx::Node *node, gpx::Report::Warning warning, const std::string& extra) override;
 };
 
 #endif /* _X_GPXREPORT_HPP_ */

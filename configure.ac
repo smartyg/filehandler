@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([libgpsfile2], [0.0.1], [goedhart.martijn@gmail.com])
-AC_CONFIG_SRCDIR([src/GpsfilePlugin.cpp])
+AC_INIT([libgpsfile2], [0.0.0], [goedhart.martijn@gmail.com])
+AC_CONFIG_SRCDIR([src/GpsfileManager.cpp])
 AC_CONFIG_HEADERS([config.h])
 AH_BOTTOM([#include <features.h>])
 
@@ -47,20 +47,30 @@ AC_DEFUN([AX_CPP_CHECK_LIB], [
 ])
 
 # some other package constants
-AX_DEFINE_SUBST([PROGRAM_NAME], [Library gps file handler], [program name])
+AX_DEFINE_SUBST([PROGRAM_NAME], [libgpsfile2], [program name])
 AX_DEFINE_SUBST([PROGRAM_SUMMARY], [Library to handle reading and writing of gps file], [program summary])
 AX_DEFINE_SUBST([PROGRAM_DESCRIPTION], [...], [program description])
-AX_DEFINE_SUBST([LAST_CHANGE], [23-07-2022], [Date of last change])
+AX_DEFINE_SUBST([LAST_CHANGE], [31-07-2022], [Date of last change])
 AX_DEFINE_SUBST([AUTHOR], [Martijn Goedhart], [Author])
 AX_DEFINE_SUBST([COPYRIGHT], [Copyright (C) 2022 Martijn Goedhart], [Copyright])
 AX_DEFINE_SUBST([LICENSE], [GNU General Public License], [License name])
 AX_DEFINE_SUBST([LICENSE_SHORT], [GPLv3+], [License shorthand])
 AX_DEFINE_SUBST([LICENSE_SHORT_RPM], [GPL-3.0+], [SPDX License code])
 AX_DEFINE_SUBST([LICENSE_LONG], [GNU GPL version 3 or later <http://www.gnu.org/licenses/gpl-3.0.html>], [Long license description])
-AX_DEFINE_SUBST([PACKAGE_HOMEPAGE], [http://www.martijn-goedhart.nl/sad/], [package home page])
-AX_DEFINE_SUBST([LIBRARY_CURRENT_VERSION], [0], [version of this library])
-AX_DEFINE_SUBST([LIBRARY_REVISION_VERSION], [0], [version of this library])
-AX_DEFINE_SUBST([LIBRARY_AGE_VERSION], [0], [version of this library])
+AX_DEFINE_SUBST([PACKAGE_HOMEPAGE], [http://www.martijn-goedhart.nl/libgpsfile2/], [package home page])
+
+# If the library source code has changed at all since the last update, then increment revision (‘c:r:a’ becomes ‘c:r+1:a’).
+# If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
+# If any interfaces have been added since the last public release, then increment age.
+# If any interfaces have been removed or changed since the last public release, then set age to 0.
+
+AX_DEFINE_SUBST([LIBRARY_CURRENT_VERSION], [0], [current interface version library])
+AX_DEFINE_SUBST([LIBRARY_REVISION_VERSION], [0], [current revision of the interface of this library])
+AX_DEFINE_SUBST([LIBRARY_AGE_VERSION], [0], [age of the interface])
+
+# Set the default flags to empty (instead of '-O2 -g')
+: ${CFLAGS=""}
+: ${CXXFLAGS=""}
 
 # Checks for programs.
 AC_PROG_CXX
@@ -102,7 +112,17 @@ AC_ARG_ENABLE([release],
 	esac],
 	[release=false])
 
-# release flag (remove all debug code from compilation)
+# example flag
+AC_ARG_ENABLE([example],
+	[AS_HELP_STRING([--enable-example], [Compile example programs @<:@default=disabled@:>@])],
+	[case "${enableval}" in
+		yes) example=true ;;
+		no)  example=false ;;
+		*) AC_MSG_ERROR([bad value ${enableval} for --enable-example]) ;;
+	esac],
+	[release=false])
+
+# google test flag
 AC_ARG_ENABLE([gtest],
 	[AS_HELP_STRING([--enable-gtest], [Enable googletest (gtest and gmock) for code testing @<:@default=disabled@:>@])],
 	[case "${enableval}" in
@@ -112,43 +132,67 @@ AC_ARG_ENABLE([gtest],
 	esac],
 	[gtest=false])
 
+# coverage flag
+AC_ARG_ENABLE([coverage],
+	[AS_HELP_STRING([--enable-coverage], [Enable coverage report generation for code testing @<:@default=disabled@:>@])],
+	[case "${enableval}" in
+		yes) coverage=true ;;
+		no)  coverage=false ;;
+		*) AC_MSG_ERROR([bad value ${enableval} for --enable-coverage]) ;;
+	esac],
+	[coverage=false])
+
 # Check for GNU C++17 standard
-AX_CXX_COMPILE_STDCXX_11(ext, mandatory)
-AX_CXX_COMPILE_STDCXX_14(ext, mandatory)
-AX_CXX_COMPILE_STDCXX_17(ext, mandatory)
+AX_CXX_COMPILE_STDCXX(11, ext, mandatory)
+AX_CXX_COMPILE_STDCXX(14, ext, mandatory)
+AX_CXX_COMPILE_STDCXX(17, ext, mandatory)
+AX_CXX_COMPILE_STDCXX(20, ext, mandatory)
 
 # Define large file symbol
 AC_SYS_LARGEFILE
 
 # Checks for header files.
-AC_CHECK_HEADERS([fcntl.h string.h sys/stat.h locale.h time.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_CHECK_HEADER_STDBOOL
-AC_TYPE_UID_T
 AC_C_INLINE
-AC_TYPE_MODE_T
-AC_TYPE_OFF_T
+AC_TYPE_UINT8_T
+AC_TYPE_UINT32_T
+AC_TYPE_INT8_T
+AC_TYPE_INT64_T
 AC_TYPE_SIZE_T
-AC_TYPE_UINT64_T
+AC_TYPE_SSIZE_T
+AC_TYPE_OFF_T
 
 # Checks for library functions.
 AC_FUNC_MALLOC
-AC_CHECK_FUNCS([memset setlocale strcpy])
+AC_FUNC_REALLOC
+AC_CHECK_FUNCS([memmove])
 
 # Checks for programs.
 AC_CHECK_PROGS([GIT], [git])
 
 # Checks for packages.
-PKG_CHECK_MODULES([GPX], [gpsdata-utils])
+PKG_CHECK_MODULES([CPPLOGGER], [cpplogger >= 0.1.0])
+PKG_CHECK_MODULES([PLUGINFRAMEWORK], [pluginframework >= 0.0.1])
+PKG_CHECK_MODULES([GPSDATA], [gpsdata >= 0.0.3])
+PKG_CHECK_MODULES([GPSDATA_UTILS], [libgpsdata-utils >= 0.0.3])
 PKG_CHECK_MODULES([GPX], [gpxlib])
+PKG_CHECK_MODULES([XML], [libxml-2.0])
 
 # Checks for libraries.
-AX_CHECK_LIB([dl], [dlopen], [DL])
 
 if test "x$gtest" == xtrue; then
 	PKG_CHECK_MODULES([GTEST], [gtest_main])
 	PKG_CHECK_MODULES([GMOCK], [gmock_main])
+
+	if test "x$coverage" == xtrue; then
+		# Checks for existence of coverage tools and define variables for reporting coverage
+		AX_COVERAGE
+	fi
+else
+	# Without tests, coverage has no use.
+	coverage=false
 fi
 
 # Compute the major version of the library which is the last part of the library SONAME.
@@ -169,7 +213,7 @@ then
 	git_version=$VERSION
 	if test -n "$GIT"
 	then
-		git_version=$($GIT describe --tags --match='v@<:@0-9@:>@*' --dirty=-modified | $SED -E -e 's/^v(@<:@0-9@:>@@<:@.0-9@:>@*)(-(@<:@0-9@:>@+)-(@<:@0-9a-g@:>@+))?(-(modified))?/\1+git\3.\4.\6/' -e 's/@<:@.@:>@{2,}/./' -e 's/(\+git)?@<:@.@:>@$//')
+		git_version=$($GIT describe --tags --match='@<:@0-9@:>@*' --dirty=-modified | $SED -E -e 's/^(@<:@0-9@:>@+(@<:@.@:>@@<:@0-9@:>@+){1,2})(-(@<:@0-9@:>@+)-(@<:@0-9a-g@:>@+))?(-(modified))?$/\1+git\4.\5.\7/' -e 's/@<:@.@:>@{2,}/./' -e 's/(\+git)?@<:@.@:>@$//')
 		if test $? -ne 0
 		then
 			git_version=$VERSION
@@ -184,10 +228,13 @@ fi
 
 AM_CONDITIONAL([DEBUG], [test x$debug = xtrue])
 AM_CONDITIONAL([RELEASE], [test x$release = xtrue])
+AM_CONDITIONAL([EXAMPLE], [test x$example = xtrue])
 AM_CONDITIONAL([HAVE_GIT], [test -n "$GIT"])
 
 AM_CONDITIONAL([GTEST], [test x$gtest = xtrue])
 AM_CONDITIONAL([GMOCK], [test x$gtest = xtrue])
 
-AC_CONFIG_FILES([Makefile libgpsfile2.pc])
+AM_CONDITIONAL([COVERAGE], [test x$coverage = xtrue])
+
+AC_CONFIG_FILES([Makefile libgpsfile2.pc libgpsfile2-providergpsroute.pc])
 AC_OUTPUT
