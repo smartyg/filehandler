@@ -342,10 +342,11 @@ void Parser::parseSample (xmlTextReaderPtr reader) {
 			if (this->_prev_time != time) {
 				if (this->_point >= 0)
 					this->_provider->finishPoint (this->_route, this->_segment, this->_point);
-				if (!this->_pause) {
-					//new point
-					this->_point = this->_provider->newPoint (this->_route, this->_segment);
-				}
+
+				if (this->_pause) break;
+
+				//new point
+				this->_point = this->_provider->newPoint (this->_route, this->_segment);
 				this->_provider->addData (this->_route, this->_segment, this->_point, ProviderRouteWriterBase::TYPE_TIME, Parser::convertString (Parser::getGpsTime (sample_node)));
 			}
 			this->_prev_time = time;
