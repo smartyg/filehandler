@@ -342,10 +342,11 @@ void Parser::parseSample (xmlTextReaderPtr reader) {
 			if (this->_prev_time != time) {
 				if (this->_point >= 0)
 					this->_provider->finishPoint (this->_route, this->_segment, this->_point);
-				if (!this->_pause) {
-					//new point
-					this->_point = this->_provider->newPoint (this->_route, this->_segment);
-				}
+
+				if (this->_pause) break;
+
+				//new point
+				this->_point = this->_provider->newPoint (this->_route, this->_segment);
 				this->_provider->addData (this->_route, this->_segment, this->_point, ProviderRouteWriterBase::TYPE_TIME, Parser::convertString (Parser::getGpsTime (sample_node)));
 			}
 			this->_prev_time = time;
@@ -405,9 +406,13 @@ void Parser::parseSample (xmlTextReaderPtr reader) {
 							if (std::get<const ProviderRouteWriterBase::RouteData>(type_value_pair) == ProviderRouteWriterBase::TYPE_DISTANCE)
 								this->_provider->addSummary (this->_route, this->_segment, std::get<const ProviderRouteWriterBase::RouteData>(type_value_pair), Parser::convertString (std::get<const xmlStringView>(type_value_pair)));
 						}
+						//TODO: check for return value (false if not a valid segment)
 						this->_provider->finishSegment (this->_route, this->_segment);
 					}
 					this->_segment = this->_provider->newSegment (this->_route);
+					std::string segment_number_str;
+					gpsdata::utils::Convert::convertValue (segment_number_str, this->_segment, true);
+					this->_provider->addData (this->_route, this->_segment, ProviderRouteWriterBase::TYPE_ID, segment_number_str);
 					this->_pause = false;
 					break;
 				}
@@ -415,6 +420,7 @@ void Parser::parseSample (xmlTextReaderPtr reader) {
 					DEBUG_MSG ("lap-info type Pause ({:d}), finish old segment (if any).\n", lapinfo_type);
 					this->_pause = true;
 					if (this->_segment >= 0 && (this->_prev_time - time > 1000)) {
+						//TODO: check for return value (false if not a valid segment)
 						this->_provider->finishSegment (this->_route, this->_segment);
 						this->_segment = -1;
 					}
