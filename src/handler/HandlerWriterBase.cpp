@@ -18,12 +18,20 @@ HandlerWriterBase::~HandlerWriterBase (void) {
 }
 
 std::size_t HandlerWriterBase::streamWrite (const char *buf, const std::size_t& s, const off_t& o) {
-	DEBUG_MSG ("HandlerWriterBase::{:s} ({:p}, {:d}, {:d})\n", __func__, buf, s, o);
-	if (this->_write_finished) return 0;
-	std::streambuf *sbuf = this->_s->rdbuf ();
-	std::size_t n_put = sbuf->sputn (buf, s);
+	std::size_t n_put;
+	{
+		std::unique_lock lock (this->_mutex);
+		DEBUG_MSG ("HandlerWriterBase::{:s} ({:p}, {:d}, {:d})\n", __func__, buf, s, o);
 
-	if (!this->write (this->_s, this->_write_finished)) throw std::runtime_error ("Can not set value on object.");
+		if (this->_write_finished) return 0;
+		std::streambuf *sbuf = this->_s->rdbuf ();
+		n_put = sbuf->sputn (buf, s);
+	}
+
+	{
+		std::shared_lock lock (this->_mutex);
+		if (!this->write (this->_s, this->_write_finished)) throw std::runtime_error ("Can not set value on object.");
+	}
 
 	return n_put;
 }
@@ -66,4 +74,22 @@ bool HandlerWriterBase::readFile (const std::string& file) {
 	}
 
 	return false;
+}
+
+std::istream* HandlerWriterBase::getStream (void) const {
+	std::shared_lock lock (this->_mutex);
+	return this->_s;
+}
+
+bool HandlerWriterBase::isFinished (void) const {
+	std::shared_lock lock (this->_mutex);
+	return this->_write_finished;
+}
+
+void HandlerWriterBase::lock (void) {
+	this->_mutex.lock ();
+}
+
+void HandlerWriterBase::unlock (void) {
+	this->_mutex.unlock ();
 }

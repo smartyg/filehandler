@@ -178,6 +178,7 @@ PKG_CHECK_MODULES([PLUGINFRAMEWORK], [pluginframework >= 0.0.1])
 PKG_CHECK_MODULES([GPSDATA], [gpsdata >= 0.0.3])
 PKG_CHECK_MODULES([GPSDATA_UTILS], [libgpsdata-utils >= 0.0.3])
 PKG_CHECK_MODULES([GPX], [gpxlib])
+PKG_CHECK_MODULES([XML], [libxml-2.0])
 
 # Checks for libraries.
 

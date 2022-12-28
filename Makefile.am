@@ -187,6 +187,18 @@ noinst_HEADERS += plugins/gpx/gpxplugin.hpp \
 	plugins/gpx/gpxwriter.hpp \
 	plugins/gpx/gpxreport.hpp
 
+pkglib_LTLIBRARIES += openambit.la
+openambit_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" @XML_CFLAGS@ @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@ @PLUGINFRAMEWORK_CFLAGS@
+openambit_la_LDFLAGS = -module -avoid-version -shared
+openambit_la_LIBADD = @XML_LIBS@ @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
+openambit_la_SOURCES = plugins/openambit/plugin.cpp \
+	plugins/openambit/OpenambitPlugin.cpp \
+	plugins/openambit/OpenambitWriter.cpp \
+	plugins/openambit/Parser.cpp
+noinst_HEADERS += plugins/openambit/OpenambitPlugin.hpp \
+	plugins/openambit/OpenambitWriter.hpp \
+	plugins/openambit/Parser.hpp
+
 # pkglib_LTLIBRARIES += log.la
 # log_la_LDFLAGS = -module -avoid-version -shared
 # log_la_LIBADD = libsad.la
@@ -217,6 +229,12 @@ write_and_read_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDA
 write_and_read_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
 write_and_read_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@ @PLUGINFRAMEWORK_CFLAGS@
 write_and_read_gpx_SOURCES = examples/write_and_read_gpx.cpp
+
+bin_PROGRAMS += read_openambit
+read_openambit_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
+read_openambit_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
+read_openambit_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
+read_openambit_SOURCES = examples/read_openambit.cpp
 
 # bin_PROGRAMS += read_write_gpx
 # read_write_gpx_LDADD = libgpsfile2.la gpx.la $(gpx_la_LIBADD)
