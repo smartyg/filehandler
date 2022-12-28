@@ -11,8 +11,11 @@
 #include "PrintGpsRoute.hpp"
 
 using libgpsfile2::GpsfileManager;
+using libgpsfile2::handler::HandlerReaderBase;
 using libgpsfile2::handler::HandlerWriterBase;
+using libgpsfile2::provider::ProviderGpsRouteReader;
 using libgpsfile2::provider::ProviderGpsRouteWriter;
+using libgpsfile2::provider::ProviderRouteReaderBase;
 using libgpsfile2::provider::ProviderRouteWriterBase;
 
 using GpsFactoryType = gpsdata::utils::GpsDataFactoryBasic;
@@ -64,6 +67,21 @@ int main (void) {
 	for (const auto& route : routes) {
 		printGpsRoute (route);
 	}
+//#if 0
+	std::cout << "create provider\n";
+	// create provider
+	auto out_provider = ProviderGpsRouteReader<GpsRouteType>::create (routes);
 
+	std::cout << "create handler\n";
+	// get handler
+	std::string out_path = "/tmp/test.gpx";
+	std::unique_ptr<HandlerReaderBase> out_handler = plugin->createReader<ProviderRouteReaderBase> (std::move (out_provider), out_path, out_path.substr (out_path.size () - 3, 3));
+
+	if (!out_handler) throw std::runtime_error ("data handler is empty");
+
+	std::cout << "write file\n";
+	// read the file given in the path argument of the constructor
+	out_handler->writeFile ();
+//#endif
 	return 0;
 }
