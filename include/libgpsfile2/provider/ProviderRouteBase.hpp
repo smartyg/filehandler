@@ -25,6 +25,7 @@ namespace libgpsfile2::provider::internal {
 				"power",
 				"speed",
 				"pressure",
+				"abspressure",
 				"distance", //Distance in meters as measured by GPS or wheel sensor.
 
 				// Types from: http://www.topografix.com/GPX/1/1/gpx.xsd
@@ -65,6 +66,33 @@ namespace libgpsfile2::provider::internal {
 				"src", //Source of data. Included to give user some idea of reliability and accuracy of data. "Garmin eTrex", "USGS quad Boston North", e.g.
 				"year", //Year of copyright.
 				"license", //Link to external file containing license text.
+
+				"deviceSerial",
+				"deviceName",
+				"deviceFWVersion",
+				"deviceHWVersion",
+
+				"ascent",
+				"descent",
+				"ascentTime",
+				"descentTime",
+				"recoveryTime",
+				"SpeedAverage",
+				"SpeedMax",
+				"cadenceAverage",
+				"cadenceMax",
+				"altitudeMin",
+				"altitudeMax",
+				"heartrateAverage",
+				"heartrateMin",
+				"heartrateMax",
+				"peakTrainingEffect",
+				"temperatureMin",
+				"temperatureMax",
+				"verticalSpeed",
+				"energy",
+				"ehpe",
+				"evpe",
 			});
 
 			constexpr static RouteData getType (const std::string_view name) {
@@ -106,6 +134,7 @@ namespace libgpsfile2::provider::internal {
 		constexpr static const RouteData TYPE_POWER = base::ProviderRouteBase::getType ("power");
 		constexpr static const RouteData TYPE_SPEED = base::ProviderRouteBase::getType ("speed");
 		constexpr static const RouteData TYPE_PRESSURE = base::ProviderRouteBase::getType ("pressure");
+		constexpr static const RouteData TYPE_ABSPRESSURE = base::ProviderRouteBase::getType ("asbpressure");
 		constexpr static const RouteData TYPE_DISTANCE = base::ProviderRouteBase::getType ("distance");
 
 		// Types from: http://www.topografix.com/GPX/1/1/gpx.xsd
@@ -146,6 +175,36 @@ namespace libgpsfile2::provider::internal {
 		constexpr static const RouteData TYPE_SRC = base::ProviderRouteBase::getType ("src");
 		constexpr static const RouteData TYPE_YEAR = base::ProviderRouteBase::getType ("year");
 		constexpr static const RouteData TYPE_LICENSE = base::ProviderRouteBase::getType ("license");
+
+		constexpr static const RouteData TYPE_DEVICESERIAL = base::ProviderRouteBase::getType ("deviceSerial");
+		constexpr static const RouteData TYPE_DEVICENAME = base::ProviderRouteBase::getType ("deviceName");
+		constexpr static const RouteData TYPE_DEVICEFWVERSION = base::ProviderRouteBase::getType ("deviceFWVersion");
+		constexpr static const RouteData TYPE_DEVICEHWVERSION = base::ProviderRouteBase::getType ("deviceHWVersion");
+
+		constexpr static const RouteData TYPE_ASCENT = base::ProviderRouteBase::getType ("ascent");
+		constexpr static const RouteData TYPE_DESCENT = base::ProviderRouteBase::getType ("descent");
+		constexpr static const RouteData TYPE_ASCENTTIME = base::ProviderRouteBase::getType ("ascentTime");
+		constexpr static const RouteData TYPE_DESCENTTIME = base::ProviderRouteBase::getType ("descentTime");
+		constexpr static const RouteData TYPE_RECOVERYTIME = base::ProviderRouteBase::getType ("recoveryTime");
+		constexpr static const RouteData TYPE_SPEEDAVERAGE = base::ProviderRouteBase::getType ("SpeedAverage");
+		constexpr static const RouteData TYPE_SPEEDMAX = base::ProviderRouteBase::getType ("SpeedMax");
+		constexpr static const RouteData TYPE_CADENCEAVERAGE = base::ProviderRouteBase::getType ("cadenceAverage");
+		constexpr static const RouteData TYPE_CADENCEMAX = base::ProviderRouteBase::getType ("cadenceMax");
+		constexpr static const RouteData TYPE_ALTITUDEMIN = base::ProviderRouteBase::getType ("altitudeMin");
+		constexpr static const RouteData TYPE_ALTITUDEMAX = base::ProviderRouteBase::getType ("altitudeMax");
+		constexpr static const RouteData TYPE_HEARTRATEAVERAGE = base::ProviderRouteBase::getType ("heartrateAverage");
+		constexpr static const RouteData TYPE_HEARTRATEMIN = base::ProviderRouteBase::getType ("heartrateMin");
+		constexpr static const RouteData TYPE_HEARTRATEMAX = base::ProviderRouteBase::getType ("heartrateMax");
+		constexpr static const RouteData TYPE_PEAKTRAININGEFFECT = base::ProviderRouteBase::getType ("peakTrainingEffect");
+		constexpr static const RouteData TYPE_TEMPERATUREMIN = base::ProviderRouteBase::getType ("temperatureMin");
+		constexpr static const RouteData TYPE_TEMPERATUREMAX = base::ProviderRouteBase::getType ("temperatureMax");
+		constexpr static const RouteData TYPE_ENERGY = base::ProviderRouteBase::getType ("energy");
+
+		constexpr static const RouteData TYPE_HEADING = base::ProviderRouteBase::getType ("heading");
+		constexpr static const RouteData TYPE_VERTICALSPEED = base::ProviderRouteBase::getType ("verticalSpeed");
+		constexpr static const RouteData TYPE_EHPE = base::ProviderRouteBase::getType ("ehpe");
+		constexpr static const RouteData TYPE_EVPE = base::ProviderRouteBase::getType ("evpe");
+
 	};
 }
 

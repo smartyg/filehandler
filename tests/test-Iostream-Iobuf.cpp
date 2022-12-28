@@ -23,9 +23,9 @@ TEST(IostreamIobufTest, Write1)
 	ASSERT_TRUE (s.rdbuf () == buf);
 
 	const std::string str = "Hello World!";
-	s.write (str, str.len ());
+	s.write (str.c_str (), str.size ());
 
-	EXPECT_STREQ (buf.str (), str);
+	EXPECT_STREQ (buf->str ().c_str (), str.c_str ());
 
 	delete buf;
 }
@@ -45,7 +45,7 @@ TEST(IostreamIobufTest, Write2)
 	std::string str1 (6, 0);
 	s.get (str1.data (), 5);
 
-	EXPECT_STREQ (str1, "Hello");
+	EXPECT_STREQ (str1.c_str (), "Hello");
 
 	delete buf;
 }

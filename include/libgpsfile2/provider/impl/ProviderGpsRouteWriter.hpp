@@ -8,7 +8,6 @@
 #include <gpsdata/utils/PointDate.hpp>
 
 #include <libgpsfile2/provider/impl/ProviderGpsRouteBase.hpp>
-#include <libgpsfile2/provider/impl/ProviderGpsRouteUtils.hpp>
 #include <libgpsfile2/provider/ProviderRouteWriterBase.hpp>
 
 #define GPX_TIME_FORMATS { "%Y-%m-%dT%TZ" }
@@ -54,20 +53,20 @@ namespace libgpsfile2::provider {
 			}
 		}
 
-		int newRoute (void) override {
+		std::size_t newRoute (void) override {
 			auto r = R::template create<R> (this->_factory);
 			this->_routeMap.push_back (r);
 			return this->_routeMap.size () - 1;
 		}
 
-		int newSegment (const int& route) override {
+		std::size_t newSegment (const std::size_t& route) override {
 			(void)route;
 			auto s = R::Segment::template create<typename R::Segment> (this->_factory);
 			this->_segmentMap.push_back (s);
 			return this->_routeMap.size () - 1;
 		}
 
-		int newPoint (const int& route, const int& segment) override {
+		std::size_t newPoint (const std::size_t& route, const std::size_t& segment) override {
 			(void)route;
 			(void)segment;
 			auto p = R::Point::template create<typename R::Point> (this->_factory);
@@ -75,19 +74,19 @@ namespace libgpsfile2::provider {
 			return this->_pointMap.size () - 1;
 		}
 
-		bool finishRoute (const int& route) override {
+		bool finishRoute (const std::size_t& route) override {
 			auto& r = this->_routeMap.at (route);
 			this->_routes.push_back (r);
 			return true;
 		}
 
-		bool finishSegment (const int& route, const int& segment) override {
+		bool finishSegment (const std::size_t& route, const std::size_t& segment) override {
 			auto& s = this->_segmentMap.at (segment);
 			const auto& r = this->_routeMap.at (route);
 			return r->addSegment (s);
 		}
 
-		bool finishPoint (const int& route, const int& segment, const int& point) override {
+		bool finishPoint (const std::size_t& route, const std::size_t& segment, const std::size_t& point) override {
 			(void)route;
 			auto& p = this->_pointMap.at (point);
 			const auto& s = this->_segmentMap.at (segment);
@@ -98,7 +97,7 @@ namespace libgpsfile2::provider {
 		constexpr
 		bool addData (const RouteData&, const std::string&) override { return false; }
 
-		bool addData (const int& route, const RouteData& t, const std::string& data) override {
+		bool addData (const std::size_t& route, const RouteData& t, const std::string& data) override {
 			const auto& r = this->_routeMap.at (route);
 			switch (t) {
 				case ProviderRouteBase::TYPE_ID: {
@@ -126,7 +125,7 @@ namespace libgpsfile2::provider {
 			return false;
 		}
 
-		bool addData (const int& route, const int& segment, const RouteData& t, const std::string& data) override {
+		bool addData (const std::size_t& route, const std::size_t& segment, const RouteData& t, const std::string& data) override {
 			(void) route;
 			const auto& s = this->_segmentMap.at (segment);
 			if (t == ProviderRouteBase::TYPE_ID) {
@@ -137,7 +136,7 @@ namespace libgpsfile2::provider {
 			return false;
 		}
 
-		bool addData (const int& route, const int& segment, const int& point, const RouteData& t, const std::string& data) override {
+		bool addData (const std::size_t& route, const std::size_t& segment, const std::size_t& point, const RouteData& t, const std::string& data) override {
 			(void) route;
 			(void) segment;
 			const auto& p = this->_pointMap.at (point);
@@ -177,14 +176,14 @@ namespace libgpsfile2::provider {
 			return false;
 		}
 
-		bool addSummary (const int& route, const RouteData& t, const std::string& data) override {
+		bool addSummary (const std::size_t& route, const RouteData& t, const std::string& data) override {
 			(void)route;
 			(void)t;
 			(void)data;
 			return true;
 		}
 
-		bool addSummary (const int& route, const int& segment, const RouteData& t, const std::string& data) override {
+		bool addSummary (const std::size_t& route, const std::size_t& segment, const RouteData& t, const std::string& data) override {
 			(void)route;
 			(void)segment;
 			(void)t;
@@ -193,7 +192,7 @@ namespace libgpsfile2::provider {
 		}
 
 		constexpr
-		bool addSummary (const int& route, const int& segment, const int& point, const RouteData& t, const std::string& data) override {
+		bool addSummary (const std::size_t& route, const std::size_t& segment, const std::size_t& point, const RouteData& t, const std::string& data) override {
 			(void)route;
 			(void)segment;
 			(void)point;
