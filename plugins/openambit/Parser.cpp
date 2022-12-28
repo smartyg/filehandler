@@ -408,6 +408,9 @@ void Parser::parseSample (xmlTextReaderPtr reader) {
 						this->_provider->finishSegment (this->_route, this->_segment);
 					}
 					this->_segment = this->_provider->newSegment (this->_route);
+					std::string segment_number_str;
+					gpsdata::utils::Convert::convertValue (segment_number_str, this->_segment, true);
+					this->_provider->addData (this->_route, this->_segment, ProviderRouteWriterBase::TYPE_ID, segment_number_str);
 					this->_pause = false;
 					break;
 				}
