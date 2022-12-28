@@ -406,6 +406,7 @@ void Parser::parseSample (xmlTextReaderPtr reader) {
 							if (std::get<const ProviderRouteWriterBase::RouteData>(type_value_pair) == ProviderRouteWriterBase::TYPE_DISTANCE)
 								this->_provider->addSummary (this->_route, this->_segment, std::get<const ProviderRouteWriterBase::RouteData>(type_value_pair), Parser::convertString (std::get<const xmlStringView>(type_value_pair)));
 						}
+						//TODO: check for return value (false if not a valid segment)
 						this->_provider->finishSegment (this->_route, this->_segment);
 					}
 					this->_segment = this->_provider->newSegment (this->_route);
@@ -419,6 +420,7 @@ void Parser::parseSample (xmlTextReaderPtr reader) {
 					DEBUG_MSG ("lap-info type Pause ({:d}), finish old segment (if any).\n", lapinfo_type);
 					this->_pause = true;
 					if (this->_segment >= 0 && (this->_prev_time - time > 1000)) {
+						//TODO: check for return value (false if not a valid segment)
 						this->_provider->finishSegment (this->_route, this->_segment);
 						this->_segment = -1;
 					}
