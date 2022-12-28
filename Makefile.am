@@ -191,9 +191,11 @@ openambit_la_LDFLAGS = -module -avoid-version -shared
 openambit_la_LIBADD = @XML_LIBS@ @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 openambit_la_SOURCES = plugins/openambit/plugin.cpp \
 	plugins/openambit/OpenambitPlugin.cpp \
-	plugins/openambit/OpenambitWriter.cpp
+	plugins/openambit/OpenambitWriter.cpp \
+	plugins/openambit/Parser.cpp
 noinst_HEADERS += plugins/openambit/OpenambitPlugin.hpp \
-	plugins/openambit/OpenambitWriter.hpp
+	plugins/openambit/OpenambitWriter.hpp \
+	plugins/openambit/Parser.hpp
 
 # pkglib_LTLIBRARIES += log.la
 # log_la_LDFLAGS = -module -avoid-version -shared

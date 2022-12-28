@@ -31,14 +31,11 @@ OpenambitWriter::~OpenambitWriter (void) {
 
 bool OpenambitWriter::write (std::istream *s, const bool& is_final) {
 	DEBUG_MSG ("OpenambitWriter::{:s} ({:p}, {:d})\n", __func__, fmt::ptr (s), is_final);
-
 	if (!this->_reader.valid ()) {
-		std::shared_ptr<Parser> parser = std::make_shared<Parser> (this->_provider, this, this->_base_instance);
-		this->_reader = std::async (std::launch::async, std::bind (&Parser::parse, parser));
-	}
 
 	if (is_final) {
-		const bool ret = this->_reader.get ();
+		std::shared_ptr<plugin::openambit::Parser> parser = std::make_shared<plugin::openambit::Parser> (this->_provider, this, this->_base_instance);
+		const bool ret = parser->parse ();
 		if (ret)
 			this->_provider->finished ();
 		return ret;
