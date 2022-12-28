@@ -31,7 +31,6 @@ OpenambitWriter::~OpenambitWriter (void) {
 
 bool OpenambitWriter::write (std::istream *s, const bool& is_final) {
 	DEBUG_MSG ("OpenambitWriter::{:s} ({:p}, {:d})\n", __func__, fmt::ptr (s), is_final);
-	if (!this->_reader.valid ()) {
 
 	if (is_final) {
 		std::shared_ptr<plugin::openambit::Parser> parser = std::make_shared<plugin::openambit::Parser> (this->_provider, this, this->_base_instance);
