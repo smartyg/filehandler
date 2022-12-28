@@ -30,23 +30,23 @@ namespace libgpsfile2::provider {
 	public:
 		virtual ~ProviderRouteWriterBase (void) = default;
 
-		virtual int newRoute (void) = 0;
-		virtual int newSegment (const int& route) = 0;
-		virtual int newPoint (const int& route, const int& segment) = 0;
+		virtual std::size_t newRoute (void) = 0;
+		virtual std::size_t newSegment (const std::size_t& route) = 0;
+		virtual std::size_t newPoint (const std::size_t& route, const std::size_t& segment) = 0;
 
-		virtual bool finishRoute (const int& route) = 0;
-		virtual bool finishSegment (const int& route, const int& segment) = 0;
-		virtual bool finishPoint (const int& route, const int& segment, const int& point) = 0;
+		virtual bool finishRoute (const std::size_t& route) = 0;
+		virtual bool finishSegment (const std::size_t& route, const std::size_t& segment) = 0;
+		virtual bool finishPoint (const std::size_t& route, const std::size_t& segment, const std::size_t& point) = 0;
 
 		virtual bool addData (const RouteData& t, const std::string& data) = 0;
-		virtual bool addData (const int& route, const RouteData& t, const std::string& data) = 0;
-		virtual bool addData (const int& route, const int& segment, const RouteData& t, const std::string& data) = 0;
-		virtual bool addData (const int& route, const int& segment, const int& point, const RouteData& t, const std::string& data) = 0;
+		virtual bool addData (const std::size_t& route, const RouteData& t, const std::string& data) = 0;
+		virtual bool addData (const std::size_t& route, const std::size_t& segment, const RouteData& t, const std::string& data) = 0;
+		virtual bool addData (const std::size_t& route, const std::size_t& segment, const std::size_t& point, const RouteData& t, const std::string& data) = 0;
 
 		virtual bool addSummary (const RouteData& t, const std::string& data) = 0;
-		virtual bool addSummary (const int& route, const RouteData& t, const std::string& data) = 0;
-		virtual bool addSummary (const int& route, const int& segment, const RouteData& t, const std::string& data) = 0;
-		virtual bool addSummary (const int& route, const int& segment, const int& point, const RouteData& t, const std::string& data) = 0;
+		virtual bool addSummary (const std::size_t& route, const RouteData& t, const std::string& data) = 0;
+		virtual bool addSummary (const std::size_t& route, const std::size_t& segment, const RouteData& t, const std::string& data) = 0;
+		virtual bool addSummary (const std::size_t& route, const std::size_t& segment, const std::size_t& point, const RouteData& t, const std::string& data) = 0;
 
 	private:
 		class PointBase : public internal::Base<PointBase> {
@@ -56,7 +56,7 @@ namespace libgpsfile2::provider {
 			const int _point;
 
 		public:
-			PointBase (ProviderRouteWriterBase* base, const int& route, const int& segment, const int& point) : _base(base), _route(route), _segment(segment), _point(point) { }
+			PointBase (ProviderRouteWriterBase* base, const std::size_t& route, const std::size_t& segment, const std::size_t& point) : _base(base), _route(route), _segment(segment), _point(point) { }
 
 			bool addDataImpl (const internal::ProviderRouteBase::RouteData& t, const std::string& data) {
 				return this->_base->addData (this->_route, this->_segment, this->_point, t, data);
@@ -77,7 +77,7 @@ namespace libgpsfile2::provider {
 			int _segment;
 
 		public:
-			SegmentBase (ProviderRouteWriterBase* base, const int& route, const int& segment) : _base(base), _route(route), _segment(segment) { }
+			SegmentBase (ProviderRouteWriterBase* base, const std::size_t& route, const std::size_t& segment) : _base(base), _route(route), _segment(segment) { }
 
 			bool addDataImpl (const internal::ProviderRouteBase::RouteData& t, const std::string& data) {
 				return this->_base->addData (this->_route, this->_segment, t, data);
@@ -101,7 +101,7 @@ namespace libgpsfile2::provider {
 			int _route;
 
 		public:
-			RouteBase (ProviderRouteWriterBase* base, const int& route) : _base(base), _route(route) { }
+			RouteBase (ProviderRouteWriterBase* base, const std::size_t& route) : _base(base), _route(route) { }
 
 			bool addDataImpl (const internal::ProviderRouteBase::RouteData& t, const std::string& data) {
 				return this->_base->addData (this->_route, t, data);
