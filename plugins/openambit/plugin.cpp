@@ -2,16 +2,18 @@
 
 #include <memory>
 #include <pluginframework/plugins.h>
-#include <libgpsfile2/PluginHelper.hpp>
-#include <libgpsfile2/provider/ProviderRouteWriterBase.hpp>
+#include <filehandler/PluginHelper.hpp>
+#include <filehandler/provider/types/route/ProviderRouteWriterBase.hpp>
 
-#include "OpenambitPlugin.hpp"
-#include "OpenambitWriter.hpp"
+#include "Plugin.hpp"
+#include "Writer.hpp"
 
 #define DATA_FILE_TYPE "log"
 
-using libgpsfile2::provider::ProviderRouteWriterBase;
-using libgpsfile2::handler::HandlerWriterBase;
+using filehandler::provider::ProviderRouteWriterBase;
+using filehandler::handler::HandlerWriterBase;
+using plugin::openambit::Writer;
+using plugin::openambit::Plugin;
 
 void __attribute__((constructor)) register_handler();
 void __attribute__((destructor)) remove_handler();
@@ -19,21 +21,21 @@ void __attribute__((destructor)) remove_handler();
 static ::PluginDetails details;
 
 void register_handler (void) {
-	auto base = std::make_shared<OpenambitPlugin>();
+	auto base = std::make_shared<Plugin>();
 
-	libgpsfile2::PluginHelper::constructPlugin (DATA_FILE_TYPE,
+	filehandler::PluginHelper::constructPlugin (DATA_FILE_TYPE,
 												"openambit logfile datafile handler",
 												"Martijn Goedhart",
 												"GPLv3.0+",
 												0,
 												0)
-		->addWriter<ProviderRouteWriterBase, OpenambitWriter> (base)
+		->addWriter<ProviderRouteWriterBase, Writer> (base)
 		->construct (details);
 
-		pluginframework_register_plugin (libgpsfile2::GpsfileManager::TAG.data (), details);
+		pluginframework_register_plugin (filehandler::FileHandlerManager::TAG.data (), details);
 }
 
 void remove_handler (void) {
-	pluginframework_remove_plugin (libgpsfile2::GpsfileManager::TAG. data (), DATA_FILE_TYPE);
-	libgpsfile2::PluginHelper::deleteData (details);
+	pluginframework_remove_plugin (filehandler::FileHandlerManager::TAG. data (), DATA_FILE_TYPE);
+	filehandler::PluginHelper::deleteData (details);
 }

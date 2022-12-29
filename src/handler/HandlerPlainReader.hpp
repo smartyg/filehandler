@@ -1,13 +1,13 @@
-#ifndef _LIBGPSFILE2_HANDLER_HANDLERPLAINREADER_
-#define _LIBGPSFILE2_HANDLER_HANDLERPLAINREADER_
+#ifndef _X_FILEHANDLER_HANDLER_HANDLERPLAINREADER_
+#define _X_FILEHANDLER_HANDLER_HANDLERPLAINREADER_
 
 #include <memory>
 #include <ostream>
 
-#include <libgpsfile2/handler/HandlerReaderBase.hpp>
-#include <libgpsfile2/provider/ProviderReaderBase.hpp>
+#include <filehandler/handler/HandlerReaderBase.hpp>
+#include <filehandler/provider/ProviderReaderBase.hpp>
 
-namespace libgpsfile2::handler {
+namespace filehandler::handler {
 	class HandlerPlainReader : public HandlerReaderBase {
 	public:
 		HandlerPlainReader (std::unique_ptr<provider::ProviderReaderBase>, const std::string&);
@@ -17,4 +17,4 @@ namespace libgpsfile2::handler {
 	};
 }
 
-#endif /* _LIBGPSFILE2_HANDLER_HANDLERPLAINREADER_ */
+#endif /* _X_FILEHANDLER_HANDLER_HANDLERPLAINREADER_ */

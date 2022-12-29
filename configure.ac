@@ -2,8 +2,8 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([libgpsfile2], [0.0.0], [goedhart.martijn@gmail.com])
-AC_CONFIG_SRCDIR([src/GpsfileManager.cpp])
+AC_INIT([libfilehandler], [0.0.0], [goedhart.martijn@gmail.com])
+AC_CONFIG_SRCDIR([src/FileHandlerManager.cpp])
 AC_CONFIG_HEADERS([config.h])
 AH_BOTTOM([#include <features.h>])
 
@@ -47,17 +47,17 @@ AC_DEFUN([AX_CPP_CHECK_LIB], [
 ])
 
 # some other package constants
-AX_DEFINE_SUBST([PROGRAM_NAME], [libgpsfile2], [program name])
-AX_DEFINE_SUBST([PROGRAM_SUMMARY], [Library to handle reading and writing of gps file], [program summary])
-AX_DEFINE_SUBST([PROGRAM_DESCRIPTION], [...], [program description])
-AX_DEFINE_SUBST([LAST_CHANGE], [31-07-2022], [Date of last change])
+AX_DEFINE_SUBST([PROGRAM_NAME], [libfilehandler], [program name])
+AX_DEFINE_SUBST([PROGRAM_SUMMARY], [Library to handle reading and writing of data files], [program summary])
+AX_DEFINE_SUBST([PROGRAM_DESCRIPTION], [Library to handle reading and writing structured data files. For each data type a provider and for each format an handler (implemented as plugins) has to be created.], [program description])
+AX_DEFINE_SUBST([LAST_CHANGE], [28-12-2022], [Date of last change])
 AX_DEFINE_SUBST([AUTHOR], [Martijn Goedhart], [Author])
 AX_DEFINE_SUBST([COPYRIGHT], [Copyright (C) 2022 Martijn Goedhart], [Copyright])
 AX_DEFINE_SUBST([LICENSE], [GNU General Public License], [License name])
 AX_DEFINE_SUBST([LICENSE_SHORT], [GPLv3+], [License shorthand])
 AX_DEFINE_SUBST([LICENSE_SHORT_RPM], [GPL-3.0+], [SPDX License code])
 AX_DEFINE_SUBST([LICENSE_LONG], [GNU GPL version 3 or later <http://www.gnu.org/licenses/gpl-3.0.html>], [Long license description])
-AX_DEFINE_SUBST([PACKAGE_HOMEPAGE], [http://www.martijn-goedhart.nl/libgpsfile2/], [package home page])
+AX_DEFINE_SUBST([PACKAGE_HOMEPAGE], [http://www.martijn-goedhart.nl/filehandler/], [package home page])
 
 # If the library source code has changed at all since the last update, then increment revision (‘c:r:a’ becomes ‘c:r+1:a’).
 # If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
@@ -207,9 +207,9 @@ else
 	AM_SILENT_RULES([yes])
 fi
 
-if test -f libgpsfile2.spec.in
+if test -f filehandler.spec.in
 then
-	AC_CONFIG_FILES([libgpsfile2.spec])
+	AC_CONFIG_FILES([filehandler.spec])
 	git_version=$VERSION
 	if test -n "$GIT"
 	then
@@ -236,5 +236,5 @@ AM_CONDITIONAL([GMOCK], [test x$gtest = xtrue])
 
 AM_CONDITIONAL([COVERAGE], [test x$coverage = xtrue])
 
-AC_CONFIG_FILES([Makefile libgpsfile2.pc libgpsfile2-providergpsroute.pc])
+AC_CONFIG_FILES([Makefile libfilehandler.pc])
 AC_OUTPUT

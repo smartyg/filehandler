@@ -1,8 +1,8 @@
 #include "config.h"
 
-#include "libgpsfile2/utils/Strings.hpp"
-#include "libgpsfile2/utils/StringsBase.hpp"
+#include "filehandler/utils/Strings.hpp"
+#include "filehandler/utils/StringsBase.hpp"
 
-template class libgpsfile2::utils::StringsBase<char>;
-template class libgpsfile2::utils::StringsBase<unsigned char>;
-template class libgpsfile2::utils::StringsBase<signed char>;
+template class filehandler::utils::StringsBase<char>;
+template class filehandler::utils::StringsBase<unsigned char>;
+template class filehandler::utils::StringsBase<signed char>;

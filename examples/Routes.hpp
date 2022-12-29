@@ -1,5 +1,5 @@
-#ifndef _LIBGPSFILE2_EXAMPLES_ROUTES_
-#define _LIBGPSFILE2_EXAMPLES_ROUTES_
+#ifndef _X_FILEHANDLER_EXAMPLES_ROUTES_
+#define _X_FILEHANDLER_EXAMPLES_ROUTES_
 
 #include <memory>
 #include <chrono>
@@ -98,4 +98,4 @@ std::shared_ptr<R> create_route_1 (const std::shared_ptr<typename R::GpsFactory>
 	return route;
 }
 
-#endif /* _LIBGPSFILE2_EXAMPLES_ROUTES_ */
+#endif /* _X_FILEHANDLER_EXAMPLES_ROUTES_ */

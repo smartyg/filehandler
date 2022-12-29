@@ -56,10 +56,10 @@ export AM_LIBS
 ## pkg-config files are also used for architecture-independent data packages,
 ## in which case the correct install location would be $(datadir)/pkgconfig.
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = libgpsfile2.pc libgpsfile2-providergpsroute.pc
+pkgconfig_DATA = libfilehandler.pc
 
-lib_LTLIBRARIES = libgpsfile2.la
-libgpsfile2_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @PLUGINFRAMEWORK_CFLAGS@ @CPPLOGGER_CFLAGS@
+lib_LTLIBRARIES = libfilehandler.la
+libfilehandler_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @PLUGINFRAMEWORK_CFLAGS@ @CPPLOGGER_CFLAGS@
 
 ## Define the source file list for the "libexample-@EXAMPLE_API_VERSION@.la"
 ## target.  Note that @EXAMPLE_API_VERSION@ is not interpreted by Automake and
@@ -67,7 +67,7 @@ libgpsfile2_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$
 ## and the variable name derived from that.
 ## Note that it is not necessary to list header files
 ## which are already listed elsewhere in a _HEADERS variable assignment.
-libgpsfile2_la_SOURCES = src/GpsfileManager.cpp \
+libfilehandler_la_SOURCES = src/FileHandlerManager.cpp \
 	src/handler/HandlerBase.cpp \
 	src/handler/HandlerPlainReader.cpp \
 	src/handler/HandlerPlainWriter.cpp \
@@ -76,12 +76,12 @@ libgpsfile2_la_SOURCES = src/GpsfileManager.cpp \
 	src/utils/Iobuf.cpp \
 	src/utils/Strings.cpp
 
-libgpsfile2_la_LIBADD = @CPPLOGGER_LIBS@
+libfilehandler_la_LIBADD = @CPPLOGGER_LIBS@
 
 ## Instruct libtool to include ABI version information in the generated shared
 ## library file (.so).  The library ABI version is defined in configure.ac, so
 ## that all version information is kept in one place.
-libgpsfile2_la_LDFLAGS = -version-info @LIBRARY_CURRENT_VERSION@:@LIBRARY_REVISION_VERSION@:@LIBRARY_AGE_VERSION@
+libfilehandler_la_LDFLAGS = -version-info @LIBRARY_CURRENT_VERSION@:@LIBRARY_REVISION_VERSION@:@LIBRARY_AGE_VERSION@
 
 noinst_HEADERS = src/handler/HandlerPlainReader.hpp \
 	src/handler/HandlerPlainWriter.hpp
@@ -91,156 +91,120 @@ noinst_HEADERS = src/handler/HandlerPlainReader.hpp \
 ## filename, in order to avoid the need to define separate file lists for each
 ## installation directory.  This only works if the directory hierarchy in the
 ## source tree matches the hierarchy at the install location, however.
-libgpsfile2_includedir = $(includedir)
-libgpsfile2_include_HEADERS = include/libgpsfile2.hpp
+libfilehandler_includedir = $(includedir)
+libfilehandler_include_HEADERS = include/filehandler.hpp
 
-libgpsfile2_sub_includedir = $(includedir)/libgpsfile2
-libgpsfile2_sub_include_HEADERS = include/libgpsfile2/GpsfileManager.hpp \
-	include/libgpsfile2/PluginHelper.hpp
+libfilehandler_sub_includedir = $(includedir)/filehandler
+libfilehandler_sub_include_HEADERS = include/filehandler/FileHandlerManager.hpp \
+	include/filehandler/PluginHelper.hpp
 
-libgpsfile2_sub_handler_includedir = $(includedir)/libgpsfile2/handler
-libgpsfile2_sub_handler_include_HEADERS = include/libgpsfile2/handler/HandlerBase.hpp \
-	include/libgpsfile2/handler/HandlerReaderBase.hpp \
-	include/libgpsfile2/handler/HandlerWriterBase.hpp
+libfilehandler_sub_handler_includedir = $(includedir)/filehandler/handler
+libfilehandler_sub_handler_include_HEADERS = include/filehandler/handler/HandlerBase.hpp \
+	include/filehandler/handler/HandlerReaderBase.hpp \
+	include/filehandler/handler/HandlerWriterBase.hpp
 
-libgpsfile2_sub_utils_includedir = $(includedir)/libgpsfile2/utils
-libgpsfile2_sub_utils_include_HEADERS = include/libgpsfile2/utils/Iobuf.hpp \
-	include/libgpsfile2/utils/IobufBase.hpp \
-	include/libgpsfile2/utils/Strings.hpp \
-	include/libgpsfile2/utils/StringsBase.hpp \
-	include/libgpsfile2/utils/dynamic_unique_ptr_cast.hpp
+libfilehandler_sub_utils_includedir = $(includedir)/filehandler/utils
+libfilehandler_sub_utils_include_HEADERS = include/filehandler/utils/Iobuf.hpp \
+	include/filehandler/utils/IobufBase.hpp \
+	include/filehandler/utils/Strings.hpp \
+	include/filehandler/utils/StringsBase.hpp \
+	include/filehandler/utils/dynamic_unique_ptr_cast.hpp
 
-libgpsfile2_sub_types_includedir = $(includedir)/libgpsfile2/types
-libgpsfile2_sub_types_include_HEADERS = include/libgpsfile2/types/PluginDetails.hpp \
-	include/libgpsfile2/types/HandlerCreatorFunc.hpp \
-	include/libgpsfile2/types/PluginCreatorFunc.hpp \
-	include/libgpsfile2/types/BasePlugin.hpp
+libfilehandler_sub_types_includedir = $(includedir)/filehandler/types
+libfilehandler_sub_types_include_HEADERS = include/filehandler/types/PluginDetails.hpp \
+	include/filehandler/types/HandlerCreatorFunc.hpp \
+	include/filehandler/types/PluginCreatorFunc.hpp \
+	include/filehandler/types/BasePlugin.hpp
 
-libgpsfile2_sub_traits_includedir = $(includedir)/libgpsfile2/traits
-libgpsfile2_sub_traits_include_HEADERS = include/libgpsfile2/traits/common.hpp \
-	include/libgpsfile2/traits/HandlerReaderTrait.hpp \
-	include/libgpsfile2/traits/HandlerWriterTrait.hpp \
-	include/libgpsfile2/traits/ProviderReaderTrait.hpp \
-	include/libgpsfile2/traits/ProviderWriterTrait.hpp
+libfilehandler_sub_traits_includedir = $(includedir)/filehandler/traits
+libfilehandler_sub_traits_include_HEADERS = include/filehandler/traits/common.hpp \
+	include/filehandler/traits/HandlerReaderTrait.hpp \
+	include/filehandler/traits/HandlerWriterTrait.hpp \
+	include/filehandler/traits/ProviderReaderTrait.hpp \
+	include/filehandler/traits/ProviderWriterTrait.hpp
 
-libgpsfile2_sub_provider_includedir = $(includedir)/libgpsfile2/provider
-libgpsfile2_sub_provider_include_HEADERS = include/libgpsfile2/provider/ProviderBase.hpp \
-	include/libgpsfile2/provider/ProviderReaderBase.hpp \
-	include/libgpsfile2/provider/ProviderWriterBase.hpp \
-	include/libgpsfile2/provider/ProviderRouteBase.hpp \
-	include/libgpsfile2/provider/ProviderRouteReaderBase.hpp \
-	include/libgpsfile2/provider/ProviderRouteWriterBase.hpp
+libfilehandler_sub_provider_includedir = $(includedir)/filehandler/provider
+libfilehandler_sub_provider_include_HEADERS = include/filehandler/provider/ProviderBase.hpp \
+	include/filehandler/provider/ProviderReaderBase.hpp \
+	include/filehandler/provider/ProviderWriterBase.hpp
 
-lib_LTLIBRARIES += libgpsfile2-providergpsroute.la
-libgpsfile2_providergpsroute_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
-libgpsfile2_providergpsroute_la_LIBADD = @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@
-## Define the source file list for the "libexample-@EXAMPLE_API_VERSION@.la"
-## target.  Note that @EXAMPLE_API_VERSION@ is not interpreted by Automake and
-## will therefore be treated as if it were literally part of the target name,
-## and the variable name derived from that.
-## Note that it is not necessary to list header files
-## which are already listed elsewhere in a _HEADERS variable assignment.
-libgpsfile2_providergpsroute_la_SOURCES = src/ProviderGpsRoute/ProviderGpsRoute.cpp
-
-#libgpsfile2_la_LIBADD = @GPSDATA_UTILS_LIBS@
-
-## Instruct libtool to include ABI version information in the generated shared
-## library file (.so).  The library ABI version is defined in configure.ac, so
-## that all version information is kept in one place.
-libgpsfile2_providergpsroute_la_LDFLAGS = -version-info @LIBRARY_CURRENT_VERSION@:@LIBRARY_REVISION_VERSION@:@LIBRARY_AGE_VERSION@
+libfilehandler_sub_provider_types_route_includedir = $(includedir)/filehandler/provider/types/route
+libfilehandler_sub_provider_types_route_include_HEADERS = include/filehandler/provider/types/route/ProviderRouteBase.hpp \
+	include/filehandler/provider/types/route/ProviderRouteReaderBase.hpp \
+	include/filehandler/provider/types/route/ProviderRouteWriterBase.hpp
 
 ## Define the list of public header files and their install location.  The
 ## nobase_ prefix instructs Automake to not strip the directory part from each
 ## filename, in order to avoid the need to define separate file lists for each
 ## installation directory.  This only works if the directory hierarchy in the
 ## source tree matches the hierarchy at the install location, however.
-libgpsfile2_sub_provider_impl_includedir = $(includedir)/libgpsfile2/provider/impl
-libgpsfile2_sub_provider_impl_include_HEADERS = include/libgpsfile2/provider/impl/ProviderGpsRoute.hpp \
-	include/libgpsfile2/provider/impl/ProviderGpsRouteBase.hpp \
-	include/libgpsfile2/provider/impl/ProviderGpsRouteReader.hpp \
-	include/libgpsfile2/provider/impl/ProviderGpsRouteWriter.hpp
+libfilehandler_sub_provider_types_route_impl_includedir = $(includedir)/filehandler/provider/types/route/impl
+libfilehandler_sub_provider_types_route_impl_include_HEADERS = include/filehandler/provider/types/route/impl/ProviderGpsRoute.hpp \
+	include/filehandler/provider/types/route/impl/ProviderGpsRouteBase.hpp \
+	include/filehandler/provider/types/route/impl/ProviderGpsRouteReader.hpp \
+	include/filehandler/provider/types/route/impl/ProviderGpsRouteWriter.hpp
 
 
-# pkglib_LTLIBRARIES = gps.la
-# gps_la_CPPFLAGS = -Isrc/libsad/include -DLOCALEDIR=\"$(localedir)\"
-# gps_la_LDFLAGS = -module -avoid-version -shared
-# gps_la_LIBADD = libsad-@LIBRARY_API_VERSION@.la
-# gps_la_SOURCES = src/libsad/plugins/gps/plugin.cpp \
-# 	src/libsad/plugins/gps/gpsplugin.cpp \
-# 	src/libsad/plugins/gps/gpsreader.cpp \
-# 	src/libsad/plugins/gps/gpswriter.cpp
-# noinst_HEADERS += src/libsad/plugins/gps/gpsplugin.hpp \
-# 	src/libsad/plugins/gps/gpsreader.hpp \
-# 	src/libsad/plugins/gps/gpswriter.hpp
+### file handler plugins ###
 
 pkglib_LTLIBRARIES = gpx.la
 gpx_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" @GPX_CFLAGS@ @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@ @PLUGINFRAMEWORK_CFLAGS@
 gpx_la_LDFLAGS = -module -avoid-version -shared
 gpx_la_LIBADD = @GPX_LIBS@ @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 gpx_la_SOURCES = plugins/gpx/plugin.cpp \
-	plugins/gpx/gpxplugin.cpp \
-	plugins/gpx/gpxreader.cpp \
-	plugins/gpx/gpxwriter.cpp \
-	plugins/gpx/gpxreport.cpp
-noinst_HEADERS += plugins/gpx/gpxplugin.hpp \
-	plugins/gpx/gpxreader.hpp \
-	plugins/gpx/gpxwriter.hpp \
-	plugins/gpx/gpxreport.hpp
+	plugins/gpx/Plugin.cpp \
+	plugins/gpx/Reader.cpp \
+	plugins/gpx/Writer.cpp \
+	plugins/gpx/Report.cpp
+noinst_HEADERS += plugins/gpx/Plugin.hpp \
+	plugins/gpx/Reader.hpp \
+	plugins/gpx/Writer.hpp \
+	plugins/gpx/Report.hpp
 
 pkglib_LTLIBRARIES += openambit.la
 openambit_la_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" @XML_CFLAGS@ @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@ @PLUGINFRAMEWORK_CFLAGS@
 openambit_la_LDFLAGS = -module -avoid-version -shared
 openambit_la_LIBADD = @XML_LIBS@ @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 openambit_la_SOURCES = plugins/openambit/plugin.cpp \
-	plugins/openambit/OpenambitPlugin.cpp \
-	plugins/openambit/OpenambitWriter.cpp \
+	plugins/openambit/Plugin.cpp \
+	plugins/openambit/Writer.cpp \
 	plugins/openambit/Parser.cpp
-noinst_HEADERS += plugins/openambit/OpenambitPlugin.hpp \
-	plugins/openambit/OpenambitWriter.hpp \
+noinst_HEADERS += plugins/openambit/Plugin.hpp \
+	plugins/openambit/Writer.hpp \
 	plugins/openambit/Parser.hpp
 
-# pkglib_LTLIBRARIES += log.la
-# log_la_LDFLAGS = -module -avoid-version -shared
-# log_la_LIBADD = libsad.la
-# log_la_SOURCES = libsad/plugins/log/LogDataFilePlugin.cpp
-# noinst_HEADERS += libsad/plugins/log/LogDataFilePlugin.hpp
 
+### Examples ###
 if EXAMPLE
 bin_PROGRAMS = read_gpx
-read_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
+read_gpx_LDADD = libfilehandler.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 read_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
 read_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 read_gpx_SOURCES = examples/read_gpx.cpp
 
 bin_PROGRAMS += write_gpx
-write_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
+write_gpx_LDADD = libfilehandler.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 write_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
 write_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 write_gpx_SOURCES = examples/write_gpx.cpp
 
 bin_PROGRAMS += read_and_write_gpx
-read_and_write_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
+read_and_write_gpx_LDADD = libfilehandler.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 read_and_write_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
 read_and_write_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 read_and_write_gpx_SOURCES = examples/read_and_write_gpx.cpp
 
 bin_PROGRAMS += write_and_read_gpx
-write_and_read_gpx_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
+write_and_read_gpx_LDADD = libfilehandler.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 write_and_read_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
 write_and_read_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@ @PLUGINFRAMEWORK_CFLAGS@
 write_and_read_gpx_SOURCES = examples/write_and_read_gpx.cpp
 
 bin_PROGRAMS += read_openambit
-read_openambit_LDADD = libgpsfile2.la libgpsfile2-providergpsroute.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
+read_openambit_LDADD = libfilehandler.la @GPSDATA_LIBS@ @GPSDATA_UTILS_LIBS@ @PLUGINFRAMEWORK_LIBS@
 read_openambit_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
 read_openambit_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"./.libs/\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
 read_openambit_SOURCES = examples/read_openambit.cpp
-
-# bin_PROGRAMS += read_write_gpx
-# read_write_gpx_LDADD = libgpsfile2.la gpx.la $(gpx_la_LIBADD)
-# read_write_gpx_LDFLAGS = -Wl,-rpath=$(pkglibdir),--enable-new-dtags
-# read_write_gpx_CPPFLAGS = -Iinclude -DLOCALEDIR=\"$(localedir)\" -DPKGLIBDIR=\"$(pkglibdir)\" @GPSDATA_CFLAGS@ @GPSDATA_UTILS_CFLAGS@
-# read_write_gpx_SOURCES = examples/read_write_gpx.cpp
 endif
 
 EXTRA_DIST = VERSION ChangeLog README AUTHORS LICENSE @PROGRAM_NAME@.spec

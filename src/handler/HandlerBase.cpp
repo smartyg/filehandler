@@ -1,11 +1,11 @@
 #include "config.h"
 
-#include "libgpsfile2/handler/HandlerBase.hpp"
+#include "filehandler/handler/HandlerBase.hpp"
 
 #include <string>
 #include <Logger.hpp>
 
-using libgpsfile2::handler::HandlerBase;
+using filehandler::handler::HandlerBase;
 
 HandlerBase::~HandlerBase (void) {
 	DEBUG_MSG ("HandlerBase::{:s} ()\n", __func__);

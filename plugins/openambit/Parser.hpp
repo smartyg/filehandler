@@ -9,10 +9,10 @@
 #include <libxml/xmlreader.h>
 #include <Logger.hpp>
 
-#include <libgpsfile2/provider/ProviderRouteWriterBase.hpp>
+#include <filehandler/provider/types/route/ProviderRouteWriterBase.hpp>
 
-#include "OpenambitPlugin.hpp"
-#include "OpenambitWriter.hpp"
+#include "Plugin.hpp"
+#include "Writer.hpp"
 
 namespace plugin::openambit {
 
@@ -53,34 +53,34 @@ class Parser final {
 		LAPINFO_START = 0x1f,
 	};
 
-	constexpr static const auto _sample_map = std::to_array<const std::pair<const libgpsfile2::provider::ProviderRouteWriterBase::RouteData, const std::string_view>> ({
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_LAT, "Latitude" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_LON, "Longitude" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_DISTANCE, "Distance" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_SPEED, "Speed" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_HEARTRATE, "HR" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_TIME, "UTC" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_SPEED, "Gpsspeed" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_SPEED, "Bikepodspeed" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_EHPE, "EHPE" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_EVPE, "EVPE" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_ELE, "Altitude" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_ABSPRESSURE, "AbsPressure" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_PRESSURE, "SeaLevelPressure" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_ENERGY, "Energy" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_TEMPERATURE, "Temperature" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_ELE, "GPSAltitude" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_HEADING, "GPSHeading" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_HDOP, "GpsHDOP" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_VDOP, "GpsVDOP" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_FIX, "NumberOfSatellites" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_VERTICALSPEED, "VerticalSpeed" },
-		{ libgpsfile2::provider::ProviderRouteWriterBase::TYPE_POWER, "BikePower" },
+	constexpr static const auto _sample_map = std::to_array<const std::pair<const filehandler::provider::ProviderRouteWriterBase::RouteData, const std::string_view>> ({
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_LAT, "Latitude" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_LON, "Longitude" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_DISTANCE, "Distance" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_SPEED, "Speed" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_HEARTRATE, "HR" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_TIME, "UTC" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_SPEED, "Gpsspeed" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_SPEED, "Bikepodspeed" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_EHPE, "EHPE" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_EVPE, "EVPE" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_ELE, "Altitude" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_ABSPRESSURE, "AbsPressure" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_PRESSURE, "SeaLevelPressure" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_ENERGY, "Energy" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_TEMPERATURE, "Temperature" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_ELE, "GPSAltitude" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_HEADING, "GPSHeading" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_HDOP, "GpsHDOP" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_VDOP, "GpsVDOP" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_FIX, "NumberOfSatellites" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_VERTICALSPEED, "VerticalSpeed" },
+		{ filehandler::provider::ProviderRouteWriterBase::TYPE_POWER, "BikePower" },
 	});
 
-	libgpsfile2::provider::ProviderRouteWriterBase* const _provider;
-	const OpenambitWriter* const _writer;
-	const std::shared_ptr<OpenambitPlugin> _base;
+	filehandler::provider::ProviderRouteWriterBase* const _provider;
+	const Writer* const _writer;
+	const std::shared_ptr<Plugin> _base;
 
 	long int _route = -1;
 	long int _segment = -1;
@@ -95,7 +95,7 @@ class Parser final {
 	void operator=(Parser&& other) noexcept = delete; // move assignment
 
 public:
-	Parser (libgpsfile2::provider::ProviderRouteWriterBase* const provider, const OpenambitWriter* const writer, const std::shared_ptr<OpenambitPlugin> base) : _provider (provider), _writer (writer), _base (base) {
+	Parser (filehandler::provider::ProviderRouteWriterBase* const provider, const Writer* const writer, const std::shared_ptr<Plugin> base) : _provider (provider), _writer (writer), _base (base) {
 		DEBUG_MSG ("Parser::{:s} ({:p}, {:p}, {:p})\n", __func__, fmt::ptr (provider), fmt::ptr (writer), fmt::ptr (base));
 		this->_prev_time = 0;
 	}
@@ -111,7 +111,7 @@ private:
 	void parseLog (xmlTextReaderPtr reader);
 	void parseHeader (xmlTextReaderPtr reader);
 	void parseSample (xmlTextReaderPtr reader);
-	void addTextAsSummary (xmlTextReaderPtr reader, const libgpsfile2::provider::ProviderRouteWriterBase::RouteData&);
+	void addTextAsSummary (xmlTextReaderPtr reader, const filehandler::provider::ProviderRouteWriterBase::RouteData&);
 
 	/**
 	 * print_element_names:
@@ -181,7 +181,7 @@ private:
 	static const xmlStringView getType (const xmlNodePtr);
 	static const xmlStringView getTime (const xmlNodePtr);
 	static const xmlStringView getGpsTime (const xmlNodePtr);
-	static const std::pair<const libgpsfile2::provider::ProviderRouteWriterBase::RouteData, const xmlStringView> getTypeValue (const xmlNodePtr);
+	static const std::pair<const filehandler::provider::ProviderRouteWriterBase::RouteData, const xmlStringView> getTypeValue (const xmlNodePtr);
 	//static LapinfoType getLapInfoType (const xmlNodePtr);
 	static xmlNodePtr getNode (const xmlNodePtr node, const char* name);
 	static const xmlStringView getNodeContent (const xmlNodePtr node);

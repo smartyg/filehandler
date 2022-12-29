@@ -7,11 +7,11 @@
 #include <ostream>
 #include <Logger.hpp>
 
-#include "libgpsfile2/provider/ProviderReaderBase.hpp"
+#include "filehandler/provider/ProviderReaderBase.hpp"
 
-using libgpsfile2::handler::HandlerPlainReader;
+using filehandler::handler::HandlerPlainReader;
 
-HandlerPlainReader::HandlerPlainReader (std::unique_ptr<libgpsfile2::provider::ProviderReaderBase> provider, const std::string& path) : HandlerBase(path), HandlerReaderBase (std::move (provider), path) {
+HandlerPlainReader::HandlerPlainReader (std::unique_ptr<filehandler::provider::ProviderReaderBase> provider, const std::string& path) : HandlerBase(path), HandlerReaderBase (std::move (provider), path) {
 	DEBUG_MSG ("HandlerPlainReader::{:s} ({:p}, {:s})\n", __func__, fmt::ptr (provider), path);
 }
 

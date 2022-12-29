@@ -7,12 +7,12 @@
 #include <istream>
 #include <Logger.hpp>
 
-#include "libgpsfile2/provider/ProviderWriterBase.hpp"
-#include "libgpsfile2/utils/Iobuf.hpp"
+#include "filehandler/provider/ProviderWriterBase.hpp"
+#include "filehandler/utils/Iobuf.hpp"
 
-using libgpsfile2::handler::HandlerPlainWriter;
+using filehandler::handler::HandlerPlainWriter;
 
-HandlerPlainWriter::HandlerPlainWriter (std::unique_ptr<libgpsfile2::provider::ProviderWriterBase> dp, const std::string& path) : HandlerBase(path), HandlerWriterBase (std::move (dp), path) {
+HandlerPlainWriter::HandlerPlainWriter (std::unique_ptr<filehandler::provider::ProviderWriterBase> dp, const std::string& path) : HandlerBase(path), HandlerWriterBase (std::move (dp), path) {
 	DEBUG_MSG ("HandlerPlainWriter::{:s} ({:p}, {:s})\n", __func__, fmt::ptr (dp), path);
 }
 
@@ -26,7 +26,7 @@ bool HandlerPlainWriter::write (std::istream *s, const bool& finished) {
 	// Only write when all data is availible
 	if (finished) {
 		// First make sure the stream is really \0 terminated by writing an (additional) \0 to the stream.
-		libgpsfile2::utils::Iobuf *b = reinterpret_cast<libgpsfile2::utils::Iobuf *>(s->rdbuf ());
+		filehandler::utils::Iobuf *b = reinterpret_cast<filehandler::utils::Iobuf *>(s->rdbuf ());
 		b->sputc ('\0');
 		bool ret = this->_dp->setData (b->getBuffer ());
 		b->consumeAllGet ();

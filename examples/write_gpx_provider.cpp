@@ -1,5 +1,5 @@
 #include "write_gpx_provider.hpp"
-using libgpsfile2::provider::ProviderGpsRouteReader;
+using filehandler::provider::ProviderGpsRouteReader;
 
 using GpsFactoryType = gpsdata::utils::GpsDataFactoryBasic;
 using GpsPointType = gpsdata::GpsPoint<GpsFactoryType>;

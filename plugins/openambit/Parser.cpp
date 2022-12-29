@@ -14,20 +14,22 @@
 #include <Logger.hpp>
 #include <gpsdata/utils/Convert.hpp>
 
-#include <libgpsfile2/provider/ProviderRouteWriterBase.hpp>
-#include <libgpsfile2/utils/Strings.hpp>
+#include <filehandler/provider/types/route/ProviderRouteWriterBase.hpp>
+#include <filehandler/utils/Strings.hpp>
 
-#include "OpenambitWriter.hpp"
+#include "Writer.hpp"
 
 using plugin::openambit::Parser;
-using libgpsfile2::provider::ProviderRouteWriterBase;
+using plugin::openambit::Writer;
+using filehandler::provider::ProviderRouteWriterBase;
+using filehandler::utils::Strings;
 
 bool Parser::parse (void) {
 	DEBUG_MSG ("Parser::{:s} ()\n", __func__);
 
 	xmlTextReaderPtr reader;
 
-	if ((reader = xmlReaderForIO (readerCallback, closeCallback, const_cast<OpenambitWriter*>(this->_writer), this->_writer->getPath ().c_str (), "utf-8", XML_PARSE_PEDANTIC | XML_PARSE_NONET | XML_PARSE_HUGE)) == nullptr)
+	if ((reader = xmlReaderForIO (readerCallback, closeCallback, const_cast<Writer*>(this->_writer), this->_writer->getPath ().c_str (), "utf-8", XML_PARSE_PEDANTIC | XML_PARSE_NONET | XML_PARSE_HUGE)) == nullptr)
 		ERROR_MSG ("can not load libxml2 reader for file {:s}\n", this->_writer->getPath ());
 
 	int ret = xmlTextReaderRead (reader);
@@ -363,16 +365,16 @@ void Parser::parseSample (xmlTextReaderPtr reader) {
 				switch (std::get<const ProviderRouteWriterBase::RouteData>(type_value_pair)) {
 					case ProviderRouteWriterBase::TYPE_LAT:
 					case ProviderRouteWriterBase::TYPE_LON:
-						libgpsfile2::utils::Strings::padLeft (value, '0', 9, libgpsfile2::utils::Strings::isSigned (value));
-						libgpsfile2::utils::Strings::insertChar (value, '.', -8);
+						Strings::padLeft (value, '0', 9, Strings::isSigned (value));
+						Strings::insertChar (value, '.', -8);
 						break;
 					case ProviderRouteWriterBase::TYPE_SPEED:
-						libgpsfile2::utils::Strings::padLeft (value, '0', 3);
-						libgpsfile2::utils::Strings::insertChar (value, '.', -2);
+						Strings::padLeft (value, '0', 3);
+						Strings::insertChar (value, '.', -2);
 						break;
 					case ProviderRouteWriterBase::TYPE_TEMPERATURE:
-						libgpsfile2::utils::Strings::padLeft (value, '0', 2);
-						libgpsfile2::utils::Strings::insertChar (value, '.', -1);
+						Strings::padLeft (value, '0', 2);
+						Strings::insertChar (value, '.', -1);
 					default:
 						break;
 				}
@@ -643,8 +645,8 @@ const std::pair<const ProviderRouteWriterBase::RouteData, const Parser::xmlStrin
 int Parser::readerCallback (void* context, char* out_buffer, int len) {
 	DEBUG_MSG ("Parser::{:s} ({:p}, {:p}, {:d})\n", __func__, fmt::ptr (context), fmt::ptr (out_buffer), len);
 
-	OpenambitWriter* ptr = static_cast<OpenambitWriter*>(context);
-	libgpsfile2::utils::Iobuf *sbuf = reinterpret_cast<libgpsfile2::utils::Iobuf *>(ptr->getStream ()->rdbuf ());
+	Writer* ptr = static_cast<Writer*>(context);
+	filehandler::utils::Iobuf *sbuf = reinterpret_cast<filehandler::utils::Iobuf *>(ptr->getStream ()->rdbuf ());
 
 	while (!ptr->isFinished () && sbuf->in_avail () == 0) {
 		std::this_thread::sleep_for (std::chrono::milliseconds (100));
@@ -666,9 +668,9 @@ int Parser::readerCallback (void* context, char* out_buffer, int len) {
 }
 
 int Parser::closeCallback (void* context) {
-	DEBUG_MSG ("OpenambitWriter::{:s} ({:p})\n", __func__, fmt::ptr (context));
+	DEBUG_MSG ("Writer::{:s} ({:p})\n", __func__, fmt::ptr (context));
 
-	OpenambitWriter* ptr = static_cast<OpenambitWriter*>(context);
+	Writer* ptr = static_cast<Writer*>(context);
 
 	assert (ptr->isFinished());
 

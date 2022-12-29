@@ -1,6 +1,6 @@
 #include "config.h"
 
-#include "libgpsfile2/handler/HandlerReaderBase.hpp"
+#include "filehandler/handler/HandlerReaderBase.hpp"
 
 #include <vector>
 #include <ios>
@@ -10,9 +10,9 @@
 #include <algorithm>
 #include <Logger.hpp>
 
-#include "libgpsfile2/utils/Iobuf.hpp"
+#include "filehandler/utils/Iobuf.hpp"
 
-using libgpsfile2::handler::HandlerReaderBase;
+using filehandler::handler::HandlerReaderBase;
 
 HandlerReaderBase::~HandlerReaderBase (void) {
 	DEBUG_MSG ("HandlerReaderBase::{:s} ()\n", __func__);
@@ -29,7 +29,7 @@ std::size_t HandlerReaderBase::streamRead (char *buf, const std::size_t& s, cons
 
 ssize_t HandlerReaderBase::streamAvailible (const off_t& offset) const {
 	DEBUG_MSG ("HandlerReaderBase::{:s} ({:d})\n", __func__, offset);
-	libgpsfile2::utils::Iobuf *sbuf = reinterpret_cast<libgpsfile2::utils::Iobuf *>(this->_s->rdbuf ());
+	filehandler::utils::Iobuf *sbuf = reinterpret_cast<filehandler::utils::Iobuf *>(this->_s->rdbuf ());
 	if (offset < sbuf->getNumGet ()) return -1;
 	return sbuf->in_avail () + sbuf->getNumGet () - offset;
 }

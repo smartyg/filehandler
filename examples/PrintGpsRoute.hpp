@@ -1,5 +1,5 @@
-#ifndef _X_GPSDATA_EXAMPLE_PRINTGPSROUTE_
-#define _X_GPSDATA_EXAMPLE_PRINTGPSROUTE_
+#ifndef _X_FILEHANDLER_EXAMPLE_PRINTGPSROUTE_
+#define _X_FILEHANDLER_EXAMPLE_PRINTGPSROUTE_
 
 #include <Logger.hpp>
 #include <gpsdata/traits/GpsRoute.hpp>
@@ -46,4 +46,4 @@ void printGpsRoute (const std::shared_ptr<R>& route) {
 	cpplogger::Logger::setLoglevel (old_level);
 }
 
-#endif /* _X_GPSDATA_EXAMPLE_PRINTGPSROUTE_ */
+#endif /* _X_FILEHANDLER_EXAMPLE_PRINTGPSROUTE_ */

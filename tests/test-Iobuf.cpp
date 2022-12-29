@@ -4,9 +4,9 @@
 
 #include <string>
 
-#include "libgpsfile2/utils/Iobuf.hpp"
+#include "filehandler/utils/Iobuf.hpp"
 
-using libgpsfile2::utils::Iobuf;
+using filehandler::utils::Iobuf;
 
 TEST(IobufTest, EmptyInit)
 {

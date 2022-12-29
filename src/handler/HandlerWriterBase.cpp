@@ -1,6 +1,6 @@
 #include "config.h"
 
-#include "libgpsfile2/handler/HandlerWriterBase.hpp"
+#include "filehandler/handler/HandlerWriterBase.hpp"
 
 #include <vector>
 #include <ios>
@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <Logger.hpp>
 
-using libgpsfile2::handler::HandlerWriterBase;
+using filehandler::handler::HandlerWriterBase;
 
 HandlerWriterBase::~HandlerWriterBase (void) {
 	DEBUG_MSG ("HandlerWriterBase::{:s} ()\n", __func__);
