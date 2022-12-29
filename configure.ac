@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.69])
-AC_INIT([libfilehandler], [0.0.0], [goedhart.martijn@gmail.com])
+AC_INIT([filehandler], [0.0.0], [goedhart.martijn@gmail.com])
 AC_CONFIG_SRCDIR([src/FileHandlerManager.cpp])
 AC_CONFIG_HEADERS([config.h])
 AH_BOTTOM([#include <features.h>])
@@ -47,7 +47,7 @@ AC_DEFUN([AX_CPP_CHECK_LIB], [
 ])
 
 # some other package constants
-AX_DEFINE_SUBST([PROGRAM_NAME], [libfilehandler], [program name])
+AX_DEFINE_SUBST([PROGRAM_NAME], [filehandler], [program name])
 AX_DEFINE_SUBST([PROGRAM_SUMMARY], [Library to handle reading and writing of data files], [program summary])
 AX_DEFINE_SUBST([PROGRAM_DESCRIPTION], [Library to handle reading and writing structured data files. For each data type a provider and for each format an handler (implemented as plugins) has to be created.], [program description])
 AX_DEFINE_SUBST([LAST_CHANGE], [28-12-2022], [Date of last change])
@@ -157,8 +157,10 @@ AC_SYS_LARGEFILE
 AC_CHECK_HEADER_STDBOOL
 AC_C_INLINE
 AC_TYPE_UINT8_T
+AC_TYPE_UINT16_T
 AC_TYPE_UINT32_T
 AC_TYPE_INT8_T
+AC_TYPE_INT16_T
 AC_TYPE_INT64_T
 AC_TYPE_SIZE_T
 AC_TYPE_SSIZE_T
