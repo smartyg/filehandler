@@ -14,7 +14,8 @@
 
 %global _lto_cflags %{?_lto_cflags} -ffat-lto-objects
 
-%define libName @PACKAGE_NAME@
+%define progName @PACKAGE_NAME@
+%define libName lib@PACKAGE_NAME@
 %define srcVersion @VERSION@
 %define majorVersion @LIBRARY_OLD_INTERFACE@
 %define gcc_version 11
@@ -36,6 +37,7 @@ BuildRequires:  pkgconfig(pluginframework) >= 0.0.1
 BuildRequires:  pkgconfig(gpsdata) >= 0.0.3
 BuildRequires:  pkgconfig(libgpsdata-utils) >= 0.0.3
 BuildRequires:  pkgconfig(gpxlib)
+BuildRequires:  pkgconfig(libxml-2.0) >= 2.9
 BuildRoot:      %{_tmppath}/%{name}-%{srcVersion}-build
 
 %description
@@ -45,42 +47,43 @@ BuildRoot:      %{_tmppath}/%{name}-%{srcVersion}-build
 Summary:        Development files for libgchart
 Group:          Development/Sources
 Requires:       %{libName}-%{majorVersion} = %{version}
-Requires:       %{libName}-providergpsroute%{majorVersion} = %{version}
-Requires:       %{libName}-plugin-gpx = %{version}
 
 %description devel
 Development files for @PACKAGE_NAME@.
 @PROGRAM_DESCRIPTION@
 
-%package -n %{libName}-%{majorVersion}
+%package -n %{libName}%{majorVersion}
 Summary:        @PROGRAM_SUMMARY@
 Group:          System/Libraries
 
-%description -n %{libName}-%{majorVersion}
+%description -n %{libName}%{majorVersion}
 @PROGRAM_DESCRIPTION@
 
-%package -n %{libName}-providergpsroute%{majorVersion}
-Summary:        @PROGRAM_SUMMARY@
-Group:          System/Libraries
-
-%description -n %{libName}-providergpsroute%{majorVersion}
-@PROGRAM_DESCRIPTION@
-
-%package -n %{libName}-plugin-gpx
+%package -n %{progName}-plugin-gpx
 Summary:        Plugin to handle reading and writing of gpx file
 Group:          System/Libraries
-Requires:       %{libName}-%{majorVersion} = %{version}
+Requires:       %{libName}%{majorVersion} = %{version}
 
-%description -n %{libName}-plugin-gpx
+%description -n %{progName}-plugin-gpx
+@PROGRAM_DESCRIPTION@
+
+%package -n %{progName}-plugin-openambit
+Summary:        Plugin to handle reading and writing of openambit-xml file
+Group:          System/Libraries
+Requires:       %{libName}%{majorVersion} = %{version}
+
+%description -n %{progName}-plugin-openambit
 @PROGRAM_DESCRIPTION@
 
 
 %prep
-%setup -q -n %{libName}-%{srcVersion}
+%setup -q -n %{progName}-%{srcVersion}
 
 %build
+export CC=gcc-%{gcc_version}
 export CXX=g++-%{gcc_version}
-%configure --disable-static --disable-debug --enable-release --enable-gtest
+export GCOV=gcov-%{gcc_version}
+%configure --disable-static --disable-debug --enable-release --enable-gtest --disable-example
 make %{?_smp_mflags}
 
 %install
@@ -90,46 +93,38 @@ make %{?_smp_mflags}
 make check %{?_smp_mflags}
 make clean
 
-%post -n %{libName}-%{majorVersion}
+%post -n %{libName}%{majorVersion}
 /sbin/ldconfig
 
-%post -n %{libName}-providergpsroute%{majorVersion}
-/sbin/ldconfig
-
-%postun -n %{libName}-%{majorVersion}
-/sbin/ldconfig
-
-%postun -n %{libName}-providergpsroute%{majorVersion}
+%postun -n %{libName}%{majorVersion}
 /sbin/ldconfig
 
 %files devel
 %defattr(-,root,root)
 %doc ChangeLog README AUTHORS
 %license LICENSE
-%{_includedir}/%{libName}.hpp
-%{_includedir}/%{libName}
+%{_includedir}/%{progName}.hpp
+%{_includedir}/%{progName}
 %_libdir/%{libName}.la
-%_libdir/%{libName}-providergpsroute.la
 %_libdir/%{libName}.so
-%_libdir/%{libName}-providergpsroute.so
 %{_libdir}/pkgconfig/%{libName}.pc
-%{_libdir}/pkgconfig/%{libName}-providergpsroute.pc
-%{_libdir}/%{libName}/gpx.la
+%{_libdir}/%{progName}/gpx.la
+%{_libdir}/%{progName}/openambit.la
 
-%files -n %{libName}-%{majorVersion}
+%files -n %{libName}%{majorVersion}
 %defattr(-,root,root)
 %license LICENSE
 %{_libdir}/%{libName}.so.*
-%dir %{_libdir}/%{libName}
+%dir %{_libdir}/%{progName}
 
-%files -n %{libName}-providergpsroute%{majorVersion}
+%files -n %{progName}-plugin-gpx
 %defattr(-,root,root)
 %license LICENSE
-%{_libdir}/%{libName}-providergpsroute.so.*
+%{_libdir}/%{progName}/gpx.so
 
-%files -n %{libName}-plugin-gpx
+%files -n %{progName}-plugin-openambit
 %defattr(-,root,root)
 %license LICENSE
-%{_libdir}/%{libName}/gpx.so
+%{_libdir}/%{progName}/openambit.so
 
 %changelog
