@@ -46,7 +46,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{srcVersion}-build
 %package devel
 Summary:        Development files for libgchart
 Group:          Development/Sources
-Requires:       %{libName}-%{majorVersion} = %{version}
+Requires:       %{libName}%{majorVersion} = %{version}
 
 %description devel
 Development files for @PACKAGE_NAME@.
