@@ -365,8 +365,9 @@ void Parser::parseSample (xmlTextReaderPtr reader) {
 				switch (std::get<const ProviderRouteWriterBase::RouteData>(type_value_pair)) {
 					case ProviderRouteWriterBase::TYPE_LAT:
 					case ProviderRouteWriterBase::TYPE_LON:
-						Strings::padLeft (value, '0', 9, Strings::isSigned (value));
-						Strings::insertChar (value, '.', -8);
+						// coordinates are stored as 1/10000000 of a degree
+						Strings::padLeft (value, '0', 8, Strings::isSigned (value));
+						Strings::insertChar (value, '.', -7);
 						break;
 					case ProviderRouteWriterBase::TYPE_SPEED:
 						Strings::padLeft (value, '0', 3);
